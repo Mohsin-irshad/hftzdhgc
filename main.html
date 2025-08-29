@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Operations Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .input-cell {
+            background-color: #fffbeb;
+        }
+        .calculated {
+            background-color: #f0fdf4;
+            font-weight: 600;
+        }
+        .warning {
+            background-color: #fefce8;
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        .error {
+            background-color: #fef2f2;
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .success {
+            background-color: #f0fdf4;
+            color: #22c55e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="container mx-auto max-w-7xl bg-white rounded-lg shadow-lg overflow-hidden">
+        <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 text-center">
+            <h1 class="text-3xl font-bold">🏭 Enhanced Operations Analyzer</h1>
+            <p class="mt-2">Comprehensive Capacity Planning & Optimization Tool</p>
+        </header>
+
+        <div class="tabs-container bg-gray-800 flex overflow-x-auto">
+            <button class="tab active text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('basic')">Basic Analysis</button>
+            <button class="tab text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('advanced')">Advanced Metrics</button>
+            <button class="tab text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('financial')">Financial Analysis</button>
+            <button class="tab text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('labor')">Labor Planning</button>
+            <button class="tab text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('scenario')">Scenario Planning</button>
+            <button class="tab text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('visual')">Visual Dashboard</button>
+            <button class="tab text-white py-3 px-6 cursor-pointer hover:bg-gray-700 whitespace-nowrap" onclick="showSection('actions')">Action Items</button>
+        </div>
+
+        <main class="content p-5">
+            <!-- Basic Analysis Section -->
+            <div id="basic" class="section active">
+                <h2 class="section-title text-xl font-bold mb-4 text-gray-700 border-b-2 border-blue-500 pb-2">1. Global Inputs & Agreed Annual Demand</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-white uppercase bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Parameter</th>
+                                <th scope="col" class="px-6 py-3">Value</th>
+                                <th scope="col" class="px-6 py-3">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="globalInputsBody">
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Shifts per Day</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="shifts" value="1" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Number of production shifts</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Hours per Shift</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="hours" value="8" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Productive hours per shift</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Days per Week</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="days" value="5" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Working days</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Weeks per Year</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="weeks" value="50" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Accounts for holidays/shutdowns</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">OEE (%)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="oee" value="80" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Overall Equipment Effectiveness</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Target Utilization (%) - Non-Bottleneck</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="targetUtil" value="85" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Max recommended utilization</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">First Pass Yield (%)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="fpy" value="95" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Quality metric</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Setup Time Frequency (per day)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="setupFrequency" value="4" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Number of changeovers per day</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Total Setup Time (minutes/day)</td>
+                                <td class="px-6 py-4 calculated" id="totalSetupTime">78.0</td>
+                                <td class="px-6 py-4">Based on frequency and average setup</td>
+                            </tr>
+                            <tr class="bg-blue-100">
+                                <td class="px-6 py-4 font-bold">AGREED Total Annual Demand (Contract)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" id="agreedDemand" value="80000" onchange="calculate()" class="w-full p-1 border rounded font-bold bg-yellow-100"></td>
+                                <td class="px-6 py-4 font-bold">Baseline commitment to customer</td>
+                            </tr>
+                             <tr class="bg-white border-b" data-product-mix-row="A">
+                                <td class="px-6 py-4 pl-12">Product A Mix (%)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-product-mix-input="A" value="12.5" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Percentage of total agreed demand</td>
+                            </tr>
+                             <tr class="bg-white border-b" data-product-mix-row="B">
+                                <td class="px-6 py-4 pl-12">Product B Mix (%)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-product-mix-input="B" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Percentage of total agreed demand</td>
+                            </tr>
+                             <tr class="bg-white border-b" data-product-mix-row="C">
+                                <td class="px-6 py-4 pl-12">Product C Mix (%)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-product-mix-input="C" value="37.5" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Percentage of total agreed demand</td>
+                            </tr>
+                             <tr class="bg-white border-b" data-product-mix-row="D">
+                                <td class="px-6 py-4 pl-12">Product D Mix (%)</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-product-mix-input="D" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4">Percentage of total agreed demand</td>
+                            </tr>
+                             <tr class="bg-gray-100 border-b">
+                                <td class="px-6 py-4 pl-12 font-bold">Total Mix %</td>
+                                <td class="px-6 py-4 calculated font-bold" id="totalMixPct">100.0%</td>
+                                <td class="px-6 py-4" id="totalMixStatus">OK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 class="section-title text-xl font-bold mt-8 mb-4 text-gray-700 border-b-2 border-blue-500 pb-2">2. Takt Time Calculation (Based on Agreed Demand)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-white uppercase bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Parameter</th>
+                                <th scope="col" class="px-6 py-3">Value</th>
+                                <th scope="col" class="px-6 py-3">Formula</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Agreed Annual Demand (from Table 1)</td>
+                                <td class="px-6 py-4 calculated" id="totalDemand">80,000</td>
+                                <td class="px-6 py-4">Contract baseline</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Agreed Daily Demand</td>
+                                <td class="px-6 py-4 calculated" id="agreedDaily">320</td>
+                                <td class="px-6 py-4">Annual ÷ Working Days</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Total Available Seconds/Year</td>
+                                <td class="px-6 py-4 calculated" id="totalSeconds">7,200,000</td>
+                                <td class="px-6 py-4">Shifts × Hours × Days × Weeks × 3600</td>
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Effective Production Seconds/Year</td>
+                                <td class="px-6 py-4 calculated" id="effectiveSeconds">5,760,000</td>
+                                <td class="px-6 py-4">(Total Seconds - Setup Seconds) × OEE</td>
+                            </tr>
+                            <tr class="bg-green-100">
+                                <td class="px-6 py-4 font-bold">AGREED TAKT TIME (seconds/piece)</td>
+                                <td class="px-6 py-4 success" id="taktTime">72.0</td>
+                                <td class="px-6 py-4">Effective Seconds ÷ Agreed Demand</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 class="section-title text-xl font-bold mt-8 mb-4 text-gray-700 border-b-2 border-blue-500 pb-2">3. Product & Process Data (Actual Customer Demand vs Agreed)</h2>
+                <div class="overflow-x-auto">
+                     <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-white uppercase bg-gray-700 text-center">
+                            <tr>
+                                <th rowspan="2" class="px-6 py-3">Product</th>
+                                <th colspan="4" class="px-6 py-3 bg-gray-800">Customer Demand (Post-SOP)</th>
+                                <th colspan="2" class="px-6 py-3 bg-green-700">Agreed Baseline</th>
+                                <th rowspan="2" class="px-6 py-3">Variance %</th>
+                                <th rowspan="2" class="px-6 py-3">Status</th>
+                            </tr>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-600">Daily Actual</th>
+                                <th class="px-6 py-3 bg-gray-600">Weekly Actual</th>
+                                <th class="px-6 py-3 bg-gray-600">Annual Projection</th>
+                                <th class="px-6 py-3 bg-gray-600">Mix %</th>
+                                <th class="px-6 py-3 bg-green-600">Daily Agreed</th>
+                                <th class="px-6 py-3 bg-green-600">Annual Agreed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productDemandBody">
+                            <tr class="bg-white border-b text-center" data-product-row="A">
+                                <td class="px-6 py-4 font-bold">Product A</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-demand-input="A" value="40" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="weeklyA">200</td>
+                                <td class="px-6 py-4 calculated" data-calculated="annualA">10,000</td>
+                                <td class="px-6 py-4 calculated" data-calculated="mixA">12.5%</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedDailyA">40</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedAnnualA">10,000</td>
+                                <td class="px-6 py-4 calculated" data-calculated="varA">0%</td>
+                                <td class="px-6 py-4 success" data-calculated="statusA">On Target</td>
+                            </tr>
+                             <tr class="bg-white border-b text-center" data-product-row="B">
+                                <td class="px-6 py-4 font-bold">Product B</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-demand-input="B" value="90" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="weeklyB">450</td>
+                                <td class="px-6 py-4 calculated" data-calculated="annualB">22,500</td>
+                                <td class="px-6 py-4 calculated" data-calculated="mixB">25.9%</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedDailyB">80</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedAnnualB">20,000</td>
+                                <td class="px-6 py-4 warning" data-calculated="varB">+12.5%</td>
+                                <td class="px-6 py-4 warning" data-calculated="statusB">Over Demand</td>
+                            </tr>
+                             <tr class="bg-white border-b text-center" data-product-row="C">
+                                <td class="px-6 py-4 font-bold">Product C</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-demand-input="C" value="120" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="weeklyC">600</td>
+                                <td class="px-6 py-4 calculated" data-calculated="annualC">30,000</td>
+                                <td class="px-6 py-4 calculated" data-calculated="mixC">34.5%</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedDailyC">120</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedAnnualC">30,000</td>
+                                <td class="px-6 py-4 calculated" data-calculated="varC">0%</td>
+                                <td class="px-6 py-4 success" data-calculated="statusC">On Target</td>
+                            </tr>
+                            <tr class="bg-white border-b text-center" data-product-row="D">
+                                <td class="px-6 py-4 font-bold">Product D</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-demand-input="D" value="96" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="weeklyD">480</td>
+                                <td class="px-6 py-4 calculated" data-calculated="annualD">24,000</td>
+                                <td class="px-6 py-4 calculated" data-calculated="mixD">27.6%</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedDailyD">80</td>
+                                <td class="px-6 py-4 calculated" data-calculated="agreedAnnualD">20,000</td>
+                                <td class="px-6 py-4 warning" data-calculated="varD">+20%</td>
+                                <td class="px-6 py-4 warning" data-calculated="statusD">Over Demand</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-gray-100 font-bold text-center">
+                                <td class="px-6 py-4">TOTAL</td>
+                                <td class="px-6 py-4 calculated" id="totalDaily">346</td>
+                                <td class="px-6 py-4 calculated" id="totalWeekly">1,730</td>
+                                <td class="px-6 py-4 calculated" id="totalAnnual">86,500</td>
+                                <td class="px-6 py-4 calculated">100%</td>
+                                <td class="px-6 py-4 calculated" id="totalAgreedDaily">320</td>
+                                <td class="px-6 py-4 calculated" id="totalAgreedAnnual">80,000</td>
+                                <td class="px-6 py-4 warning" id="totalVar">+8.1%</td>
+                                <td class="px-6 py-4 warning" id="totalStatus">Over Capacity</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                 <h2 class="section-title text-xl font-bold mt-8 mb-4 text-gray-700 border-b-2 border-blue-500 pb-2">3b. Process Cycle Times & Setup Requirements</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-white uppercase bg-gray-700">
+                            <tr id="cycleTimeHeader">
+                                <th class="px-6 py-3">Product</th>
+                                <th class="px-6 py-3" data-process-header="Cutting">Cutting (sec)</th>
+                                <th class="px-6 py-3" data-process-header="Welding">Welding (sec)</th>
+                                <th class="px-6 py-3" data-process-header="Bending">Bending (sec)</th>
+                                <th class="px-6 py-3" data-process-header="Assembly">Assembly (sec)</th>
+                                <th class="px-6 py-3">Bottleneck Cycle Time (sec)</th>
+                                <th class="px-6 py-3">Setup Time (min)</th>
+                                <th class="px-6 py-3">Actual Takt Required</th>
+                                <th class="px-6 py-3">Takt Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cycleTimeBody">
+                            <tr class="bg-white border-b text-center" data-product-row="A">
+                                <td class="px-6 py-4 font-bold">Product A</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="A" data-process="Cutting" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="A" data-process="Welding" value="55" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="A" data-process="Bending" value="40" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="A" data-process="Assembly" value="80" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="bottleneckA">80</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-setup-input="A" value="15" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="reqTaktA">66.5</td>
+                                <td class="px-6 py-4 success" data-calculated="taktGapA">OK</td>
+                            </tr>
+                            <tr class="bg-white border-b text-center" data-product-row="B">
+                                <td class="px-6 py-4 font-bold">Product B</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="B" data-process="Cutting" value="30" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="B" data-process="Welding" value="65" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="B" data-process="Bending" value="45" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="B" data-process="Assembly" value="95" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="bottleneckB">95</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-setup-input="B" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="reqTaktB">66.5</td>
+                                <td class="px-6 py-4 error" data-calculated="taktGapB">RISK</td>
+                            </tr>
+                             <tr class="bg-white border-b text-center" data-product-row="C">
+                                <td class="px-6 py-4 font-bold">Product C</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="C" data-process="Cutting" value="35" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="C" data-process="Welding" value="70" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="C" data-process="Bending" value="50" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="C" data-process="Assembly" value="100" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="bottleneckC">100</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-setup-input="C" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="reqTaktC">66.5</td>
+                                <td class="px-6 py-4 error" data-calculated="taktGapC">RISK</td>
+                            </tr>
+                            <tr class="bg-white border-b text-center" data-product-row="D">
+                                <td class="px-6 py-4 font-bold">Product D</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="D" data-process="Cutting" value="28" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="D" data-process="Welding" value="60" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="D" data-process="Bending" value="42" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="D" data-process="Assembly" value="90" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="bottleneckD">90</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-setup-input="D" value="18" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 calculated" data-calculated="reqTaktD">66.5</td>
+                                <td class="px-6 py-4 error" data-calculated="taktGapD">RISK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex space-x-4">
+                     <button onclick="addProduct()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                        + Add Product
+                    </button>
+                    <button onclick="addProcess()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                        + Add Process
+                    </button>
+                </div>
+
+
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mt-8 rounded-r-lg">
+                    <h3 class="font-bold">⚠️ Demand Analysis Summary</h3>
+                    <p class="mt-2"><strong>Customer is requesting <span id="summaryDemandVar">8.1%</span> more than agreed baseline (<span id="summaryDailyActual">346</span> vs <span id="summaryDailyAgreed">320</span> units/day)</strong></p>
+                    <ul class="list-disc list-inside mt-2" id="summaryProductList">
+                        <li>Product B: +12.5% over agreement (90 vs 80 daily)</li>
+                        <li>Product D: +20% over agreement (96 vs 80 daily)</li>
+                    </ul>
+                     <p class="mt-2">This requires actual takt time of <span id="summaryReqTakt">66.5</span> seconds vs agreed <span id="summaryAgreedTakt">72</span> seconds</p>
+                </div>
+
+                <h2 class="section-title text-xl font-bold mt-8 mb-4 text-gray-700 border-b-2 border-blue-500 pb-2">4. Capacity Analysis (Based on Actual Customer Demand)</h2>
+                 <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-white uppercase bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3">Process</th>
+                                <th class="px-6 py-3">WACT (sec)</th>
+                                <th class="px-6 py-3">Required Takt</th>
+                                <th class="px-6 py-3">Agreed Takt Time</th>
+                                <th class="px-6 py-3">Demand Status</th>
+                                <th class="px-6 py-3">Utilization %</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3">Required Stations</th>
+                                <th class="px-6 py-3">Final Utilization %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="capacityAnalysisBody">
+                             <tr class="bg-white border-b text-center" data-process-row="Cutting">
+                                <td class="font-bold">Cutting</td>
+                                <td class="calculated" data-capacity="wact">31.1</td>
+                                <td class="calculated" data-capacity="takt">66.5</td>
+                                <td class="calculated" data-capacity="agreedTakt">71.5</td>
+                                <td data-capacity="demandStatus" class="warning">High Demand</td>
+                                <td class="calculated" data-capacity="util">47%</td>
+                                <td class="success" data-capacity="status">OK</td>
+                                <td class="calculated" data-capacity="req">1</td>
+                                <td class="calculated" data-capacity="finalUtil">47%</td>
+                            </tr>
+                            <tr class="bg-white border-b text-center" data-process-row="Welding">
+                                 <td class="font-bold">Welding</td>
+                                <td class="calculated" data-capacity="wact">64.6</td>
+                                <td class="calculated" data-capacity="takt">66.5</td>
+                                <td class="calculated" data-capacity="agreedTakt">71.5</td>
+                                <td data-capacity="demandStatus" class="warning">High Demand</td>
+                                <td class="calculated" data-capacity="util">97%</td>
+                                <td class="error" data-capacity="status">CRITICAL</td>
+                                <td class="calculated" data-capacity="req">1</td>
+                                <td class="calculated" data-capacity="finalUtil">97%</td>
+                            </tr>
+                            <tr class="bg-white border-b text-center" data-process-row="Bending">
+                                 <td class="font-bold">Bending</td>
+                                <td class="calculated" data-capacity="wact">45.6</td>
+                                <td class="calculated" data-capacity="takt">66.5</td>
+                                <td class="calculated" data-capacity="agreedTakt">71.5</td>
+                                <td data-capacity="demandStatus" class="warning">High Demand</td>
+                                <td class="calculated" data-capacity="util">69%</td>
+                                <td class="success" data-capacity="status">OK</td>
+                                <td class="calculated" data-capacity="req">1</td>
+                                <td class="calculated" data-capacity="finalUtil">69%</td>
+                            </tr>
+                            <tr class="bg-white border-b text-center" data-process-row="Assembly">
+                                 <td class="font-bold">Assembly</td>
+                                <td class="calculated" data-capacity="wact">94.3</td>
+                                <td class="calculated" data-capacity="takt">66.5</td>
+                                <td class="calculated" data-capacity="agreedTakt">71.5</td>
+                                <td data-capacity="demandStatus" class="warning">High Demand</td>
+                                <td class="calculated" data-capacity="util">71%</td>
+                                <td class="success" data-capacity="status">OK</td>
+                                <td class="calculated" data-capacity="req">2</td>
+                                <td class="calculated" data-capacity="finalUtil">71%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 class="section-title text-xl font-bold mt-8 mb-4 text-gray-700 border-b-2 border-blue-500 pb-2">5. Capacity & Station Allocation</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-white uppercase bg-gray-700">
+                            <tr id="stationAllocationHeader">
+                                <th class="px-6 py-3">Product</th>
+                                <th class="px-6 py-3" data-station-process-header="Cutting">Cutting Cap. %</th>
+                                <th class="px-6 py-3" data-station-process-header="Welding">Welding Cap. %</th>
+                                <th class="px-6 py-3" data-station-process-header="Bending">Bending Cap. %</th>
+                                <th class="px-6 py-3" data-station-process-header="Assembly">Assembly Cap. %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stationAllocationBody">
+                             <tr class="bg-white border-b text-center" data-station-product-row="A">
+                                <td class="px-6 py-4 font-bold">Product A</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="A" data-process="Cutting" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="A" data-process="Welding" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="A" data-process="Bending" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="A" data-process="Assembly" value="30" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                            </tr>
+                             <tr class="bg-white border-b text-center" data-station-product-row="B">
+                                <td class="px-6 py-4 font-bold">Product B</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="B" data-process="Cutting" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="B" data-process="Welding" value="30" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="B" data-process="Bending" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="B" data-process="Assembly" value="35" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                            </tr>
+                             <tr class="bg-white border-b text-center" data-station-product-row="C">
+                                <td class="px-6 py-4 font-bold">Product C</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="C" data-process="Cutting" value="35" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="C" data-process="Welding" value="25" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="C" data-process="Bending" value="35" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="C" data-process="Assembly" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                            </tr>
+                             <tr class="bg-white border-b text-center" data-station-product-row="D">
+                                <td class="px-6 py-4 font-bold">Product D</td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="D" data-process="Cutting" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="D" data-process="Welding" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="D" data-process="Bending" value="20" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                                <td class="px-6 py-4 input-cell"><input type="number" data-station-input="D" data-process="Assembly" value="15" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                             <tr class="bg-gray-100 font-bold text-center">
+                                <td class="px-6 py-4">Total Used Capacity %</td>
+                                <td class="px-6 py-4 calculated" data-station-total-used="Cutting">100%</td>
+                                <td class="px-6 py-4 calculated" data-station-total-used="Welding">100%</td>
+                                <td class="px-6 py-4 calculated" data-station-total-used="Bending">100%</td>
+                                <td class="px-6 py-4 calculated" data-station-total-used="Assembly">100%</td>
+                            </tr>
+                            <tr class="bg-gray-100 font-bold text-center">
+                                <td class="px-6 py-4">Total Available Capacity %</td>
+                                <td class="px-6 py-4 calculated" data-station-total-available="Cutting">100%</td>
+                                <td class="px-6 py-4 calculated" data-station-total-available="Welding">100%</td>
+                                <td class="px-6 py-4 calculated" data-station-total-available="Bending">100%</td>
+                                <td class="px-6 py-4 calculated" data-station-total-available="Assembly">100%</td>
+                            </tr>
+                            <tr class="bg-gray-200 font-bold text-center">
+                                <td class="px-6 py-4">Number of Stations</td>
+                                <td class="px-6 py-4 calculated" data-station-count="Cutting">1</td>
+                                <td class="px-6 py-4 calculated" data-station-count="Welding">1</td>
+                                <td class="px-6 py-4 calculated" data-station-count="Bending">1</td>
+                                <td class="px-6 py-4 calculated" data-station-count="Assembly">1</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-8 rounded-r-lg" id="criticalIssues">
+                    <h3 class="font-bold">🔴 Critical Capacity Issues with Actual Demand</h3>
+                    <ul class="list-disc list-inside mt-2" id="criticalIssuesList">
+                        <li><strong>Assembly:</strong> 142% utilization - Immediate second station required</li>
+                        <li><strong>Welding:</strong> 97% utilization - Now CRITICAL (was 89% with agreed demand)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Other sections would be here... -->
+             <div id="advanced" class="section">Content for Advanced Metrics...</div>
+            <div id="financial" class="section">Content for Financial Analysis...</div>
+            <div id="labor" class="section">Content for Labor Planning...</div>
+            <div id="scenario" class="section">Content for Scenario Planning...</div>
+            <div id="visual" class="section">Content for Visual Dashboard...</div>
+            <div id="actions" class="section">Content for Action Items...</div>
+
+        </main>
+    </div>
+
+    <script>
+        let productCount = 4; // A, B, C, D
+        let processNames = ['Cutting', 'Welding', 'Bending', 'Assembly'];
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function addProduct() {
+            productCount++;
+            const newProductId = String.fromCharCode(64 + productCount); // E, F, G...
+
+            // Add to Agreed Mix table
+            const mixBody = document.getElementById('globalInputsBody');
+            const newMixRow = `
+                <tr class="bg-white border-b" data-product-mix-row="${newProductId}">
+                    <td class="px-6 py-4 pl-12">Product ${newProductId} Mix (%)</td>
+                    <td class="px-6 py-4 input-cell"><input type="number" data-product-mix-input="${newProductId}" value="0" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                    <td class="px-6 py-4">Percentage of total agreed demand</td>
+                </tr>`;
+            mixBody.querySelector('tr.bg-gray-100').insertAdjacentHTML('beforebegin', newMixRow);
+
+            // Add to Product Demand table
+            const demandBody = document.getElementById('productDemandBody');
+            const newDemandRow = `
+                <tr class="bg-white border-b text-center" data-product-row="${newProductId}">
+                    <td class="px-6 py-4 font-bold">Product ${newProductId}</td>
+                    <td class="px-6 py-4 input-cell"><input type="number" data-demand-input="${newProductId}" value="0" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                    <td class="px-6 py-4 calculated" data-calculated="weekly${newProductId}">0</td>
+                    <td class="px-6 py-4 calculated" data-calculated="annual${newProductId}">0</td>
+                    <td class="px-6 py-4 calculated" data-calculated="mix${newProductId}">0%</td>
+                    <td class="px-6 py-4 calculated" data-calculated="agreedDaily${newProductId}">0</td>
+                    <td class="px-6 py-4 calculated" data-calculated="agreedAnnual${newProductId}">0</td>
+                    <td class="px-6 py-4 calculated" data-calculated="var${newProductId}">0%</td>
+                    <td class="px-6 py-4 success" data-calculated="status${newProductId}">On Target</td>
+                </tr>`;
+            demandBody.insertAdjacentHTML('beforeend', newDemandRow);
+            
+            // Add to Cycle Time table
+            const cycleBody = document.getElementById('cycleTimeBody');
+            let processCells = '';
+            processNames.forEach(name => {
+                processCells += `<td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="${newProductId}" data-process="${name}" value="0" onchange="calculate()" class="w-full p-1 border rounded"></td>`;
+            });
+            const newCycleRow = `
+                <tr class="bg-white border-b text-center" data-product-row="${newProductId}">
+                    <td class="px-6 py-4 font-bold">Product ${newProductId}</td>
+                    ${processCells}
+                    <td class="px-6 py-4 calculated" data-calculated="bottleneck${newProductId}">0</td>
+                    <td class="px-6 py-4 input-cell"><input type="number" data-setup-input="${newProductId}" value="10" onchange="calculate()" class="w-full p-1 border rounded"></td>
+                    <td class="px-6 py-4 calculated" data-calculated="reqTakt${newProductId}">0</td>
+                    <td class="px-6 py-4 success" data-calculated="taktGap${newProductId}">OK</td>
+                </tr>`;
+            cycleBody.insertAdjacentHTML('beforeend', newCycleRow);
+            
+            // Add to Station Allocation table
+            const stationBody = document.getElementById('stationAllocationBody');
+            let stationCells = '';
+            processNames.forEach(name => {
+                stationCells += `<td class="px-6 py-4 input-cell"><input type="number" data-station-input="${newProductId}" data-process="${name}" value="0" onchange="calculate()" class="w-full p-1 border rounded"></td>`;
+            });
+            const newStationRow = `
+                 <tr class="bg-white border-b text-center" data-station-product-row="${newProductId}">
+                    <td class="px-6 py-4 font-bold">Product ${newProductId}</td>
+                    ${stationCells}
+                </tr>`;
+            stationBody.insertAdjacentHTML('beforeend', newStationRow);
+
+
+            calculate();
+        }
+
+        function addProcess() {
+            const newProcessName = prompt("Enter the name for the new process:", "New Process");
+            if (!newProcessName || processNames.includes(newProcessName)) {
+                alert("Process name cannot be empty or a duplicate.");
+                return;
+            }
+            processNames.push(newProcessName);
+
+            // Add to Cycle Time header
+            const cycleHeader = document.getElementById('cycleTimeHeader');
+            const newCycleHeaderCell = `<th class="px-6 py-3" data-process-header="${newProcessName}">${newProcessName} (sec)</th>`;
+            cycleHeader.querySelector('th:nth-last-child(4)').insertAdjacentHTML('beforebegin', newCycleHeaderCell);
+
+            // Add cells to each product row in Cycle Time table
+            const cycleBodyRows = document.querySelectorAll('#cycleTimeBody tr');
+            cycleBodyRows.forEach(row => {
+                const productId = row.dataset.productRow;
+                const newCell = `<td class="px-6 py-4 input-cell"><input type="number" data-cycle-input="${productId}" data-process="${newProcessName}" value="0" onchange="calculate()" class="w-full p-1 border rounded"></td>`;
+                row.querySelector('td:nth-last-child(4)').insertAdjacentHTML('beforebegin', newCell);
+            });
+            
+            // Add to Capacity Analysis table
+            const capacityBody = document.getElementById('capacityAnalysisBody');
+            const newCapacityRow = `
+                <tr class="bg-white border-b text-center" data-process-row="${newProcessName}">
+                    <td class="font-bold">${newProcessName}</td>
+                    <td class="calculated" data-capacity="wact">0</td>
+                    <td class="calculated" data-capacity="takt">0</td>
+                    <td class="calculated" data-capacity="agreedTakt">0</td>
+                    <td data-capacity="demandStatus"></td>
+                    <td class="calculated" data-capacity="util">0%</td>
+                    <td class="success" data-capacity="status">OK</td>
+                    <td class="calculated" data-capacity="req">1</td>
+                    <td class="calculated" data-capacity="finalUtil">0%</td>
+                </tr>`;
+            capacityBody.insertAdjacentHTML('beforeend', newCapacityRow);
+
+            // Add to Station Allocation table
+            const stationHeader = document.getElementById('stationAllocationHeader');
+            const newStationHeaderCell = `<th class="px-6 py-3" data-station-process-header="${newProcessName}">${newProcessName} Cap. %</th>`;
+            stationHeader.insertAdjacentHTML('beforeend', newStationHeaderCell);
+
+            const stationBodyRows = document.querySelectorAll('#stationAllocationBody tr');
+            stationBodyRows.forEach(row => {
+                const productId = row.dataset.stationProductRow;
+                const newCell = `<td class="px-6 py-4 input-cell"><input type="number" data-station-input="${productId}" data-process="${newProcessName}" value="0" onchange="calculate()" class="w-full p-1 border rounded"></td>`;
+                row.insertAdjacentHTML('beforeend', newCell);
+            });
+            
+            // Add to station allocation footer
+            const stationFooterTotal = document.querySelector('#stationAllocationBody + tfoot tr:first-child');
+            const newTotalCell = `<td class="px-6 py-4 calculated" data-station-total-used="${newProcessName}">0%</td>`;
+            stationFooterTotal.insertAdjacentHTML('beforeend', newTotalCell);
+            
+            const stationFooterAvailable = document.querySelector('#stationAllocationBody + tfoot tr:nth-child(2)');
+            const newAvailableCell = `<td class="px-6 py-4 calculated" data-station-total-available="${newProcessName}">100%</td>`;
+            stationFooterAvailable.insertAdjacentHTML('beforeend', newAvailableCell);
+
+            const stationFooterCount = document.querySelector('#stationAllocationBody + tfoot tr:last-child');
+            const newCountCell = `<td class="px-6 py-4 calculated" data-station-count="${newProcessName}">1</td>`;
+            stationFooterCount.insertAdjacentHTML('beforeend', newCountCell);
+
+            calculate();
+        }
+
+        function calculate() {
+            // --- GATHER DATA ---
+            const products = Array.from(document.querySelectorAll('#productDemandBody [data-product-row]')).map(row => row.dataset.productRow);
+            let productData = {};
+
+            // Global inputs
+            const shifts = parseFloat(document.getElementById('shifts').value) || 1;
+            const hours = parseFloat(document.getElementById('hours').value) || 8;
+            const days = parseFloat(document.getElementById('days').value) || 5;
+            const weeks = parseFloat(document.getElementById('weeks').value) || 50;
+            const oee = parseFloat(document.getElementById('oee').value) / 100 || 0.8;
+            const workingDaysPerYear = days * weeks;
+            const agreedTotalDemand = parseFloat(document.getElementById('agreedDemand').value) || 80000;
+            const agreedDailyDemand = workingDaysPerYear > 0 ? agreedTotalDemand / workingDaysPerYear : 0;
+            const setupFrequency = parseFloat(document.getElementById('setupFrequency').value) || 0;
+            
+            let totalSetupMin = 0;
+            let totalActualDailyDemand = 0;
+            let totalAgreedMixPct = 0;
+            
+            products.forEach(p => {
+                productData[p] = {
+                    agreedMix: parseFloat(document.querySelector(`[data-product-mix-input="${p}"]`).value) || 0,
+                    actualDaily: parseFloat(document.querySelector(`[data-demand-input="${p}"]`).value) || 0,
+                    setupMin: parseFloat(document.querySelector(`[data-setup-input="${p}"]`).value) || 0,
+                    cycleTimes: {}
+                };
+                 processNames.forEach(proc => {
+                    const inputEl = document.querySelector(`[data-cycle-input="${p}"][data-process="${proc}"]`);
+                    productData[p].cycleTimes[proc] = inputEl ? parseFloat(inputEl.value) || 0 : 0;
+                });
+                totalSetupMin += productData[p].setupMin;
+                totalActualDailyDemand += productData[p].actualDaily;
+                totalAgreedMixPct += productData[p].agreedMix;
+            });
+            
+            // --- CALCULATIONS ---
+
+            // Station counts from Table 5 totals
+            let stationCounts = {};
+            let capacityTotals = {};
+            processNames.forEach(proc => {
+                let totalCap = 0;
+                products.forEach(p => {
+                     const stationInputElement = document.querySelector(`[data-station-input="${p}"][data-process="${proc}"]`);
+                    totalCap += stationInputElement ? parseFloat(stationInputElement.value) || 0 : 0;
+                });
+                capacityTotals[proc] = totalCap;
+                stationCounts[proc] = Math.ceil(totalCap / 100);
+                 if(stationCounts[proc] === 0) stationCounts[proc] = 1; // Always have at least 1 station
+            });
+
+            // Setup Time
+            const avgSetupMin = products.length > 0 ? totalSetupMin / products.length : 0;
+            const totalSetupMinutesPerDay = avgSetupMin * setupFrequency;
+            const totalSetupSecondsPerYear = totalSetupMinutesPerDay * 60 * workingDaysPerYear;
+            
+            // Takt Time
+            const totalSeconds = shifts * hours * days * weeks * 3600;
+            const effectiveSeconds = (totalSeconds - totalSetupSecondsPerYear) * oee;
+            const agreedTaktTime = agreedTotalDemand > 0 ? effectiveSeconds / agreedTotalDemand : 0;
+            const actualRequiredTakt = (totalActualDailyDemand * workingDaysPerYear) > 0 ? effectiveSeconds / (totalActualDailyDemand * workingDaysPerYear) : 0;
+            
+            // WACT for each process
+            let processWacts = {};
+            processNames.forEach(proc => {
+                let wact = 0;
+                products.forEach(p => {
+                    const mix = totalActualDailyDemand > 0 ? productData[p].actualDaily / totalActualDailyDemand : 0;
+                    if(isFinite(productData[p].cycleTimes[proc])){
+                       wact += productData[p].cycleTimes[proc] * mix;
+                    }
+                });
+                processWacts[proc] = wact;
+            });
+
+            // --- UPDATE DOM ---
+            
+            // Table 1
+            document.getElementById('totalSetupTime').textContent = totalSetupMinutesPerDay.toFixed(1);
+            const totalMixPctEl = document.getElementById('totalMixPct');
+            totalMixPctEl.textContent = totalAgreedMixPct.toFixed(1) + '%';
+            const totalMixStatusEl = document.getElementById('totalMixStatus');
+            if (Math.abs(totalAgreedMixPct - 100) > 0.1) {
+                totalMixPctEl.className = 'calculated font-bold error';
+                totalMixStatusEl.textContent = 'Must equal 100%';
+                totalMixStatusEl.className = 'error';
+            } else {
+                totalMixPctEl.className = 'calculated font-bold success';
+                totalMixStatusEl.textContent = 'OK';
+                totalMixStatusEl.className = 'success';
+            }
+
+            // Table 2
+            document.getElementById('totalDemand').textContent = agreedTotalDemand.toLocaleString();
+            document.getElementById('agreedDaily').textContent = agreedDailyDemand.toFixed(0);
+            document.getElementById('totalSeconds').textContent = totalSeconds.toLocaleString();
+            document.getElementById('effectiveSeconds').textContent = effectiveSeconds.toLocaleString();
+            document.getElementById('taktTime').textContent = agreedTaktTime.toFixed(1);
+
+            // Table 3 & 3b
+            let summaryProductListHTML = '';
+            products.forEach(p => {
+                const data = productData[p];
+                const agreedDaily = agreedDailyDemand * (data.agreedMix / 100);
+                
+                const p_sanitized = p.replace(/\s/g, '');
+                
+                // Table 3
+                updateCell(`weekly${p_sanitized}`, (data.actualDaily * days).toFixed(0));
+                updateCell(`annual${p_sanitized}`, (data.actualDaily * workingDaysPerYear).toLocaleString());
+                updateCell(`mix${p_sanitized}`, totalActualDailyDemand > 0 ? ((data.actualDaily / totalActualDailyDemand) * 100).toFixed(1) + '%' : '0%');
+                updateCell(`agreedDaily${p_sanitized}`, agreedDaily.toFixed(0));
+                updateCell(`agreedAnnual${p_sanitized}`, (agreedDaily * workingDaysPerYear).toLocaleString());
+                const variance = agreedDaily > 0 ? ((data.actualDaily - agreedDaily) / agreedDaily) * 100 : 0;
+                updateCell(`var${p_sanitized}`, (variance > 0 ? '+' : '') + variance.toFixed(1) + '%');
+                updateStatus(document.querySelector(`[data-calculated="status${p_sanitized}"]`), variance, 'Over Demand', 'Under Demand', 'On Target');
+
+                if(Math.abs(variance) > 5){
+                    summaryProductListHTML += `<li>${p}: ${variance > 0 ? '+' : ''}${variance.toFixed(1)}% over agreement (${data.actualDaily.toFixed(0)} vs ${agreedDaily.toFixed(0)} daily)</li>`;
+                }
+                
+                // Table 3b
+                const validCycleTimes = Object.values(data.cycleTimes).filter(isFinite);
+                const bottleneck = validCycleTimes.length > 0 ? Math.max(...validCycleTimes) : 0;
+                updateCell(`bottleneck${p_sanitized}`, bottleneck.toFixed(1));
+                updateCell(`reqTakt${p_sanitized}`, actualRequiredTakt.toFixed(1));
+                const taktGapEl = document.querySelector(`[data-calculated="taktGap${p_sanitized}"]`);
+                if (bottleneck > actualRequiredTakt && actualRequiredTakt > 0) {
+                    taktGapEl.textContent = 'RISK';
+                    taktGapEl.className = 'error';
+                } else {
+                    taktGapEl.textContent = 'OK';
+                    taktGapEl.className = 'success';
+                }
+            });
+
+            // Table 3 Totals
+            document.getElementById('totalDaily').textContent = totalActualDailyDemand.toFixed(0);
+            document.getElementById('totalWeekly').textContent = (totalActualDailyDemand * days).toFixed(0);
+            document.getElementById('totalAnnual').textContent = (totalActualDailyDemand * workingDaysPerYear).toLocaleString();
+            document.getElementById('totalAgreedDaily').textContent = agreedDailyDemand.toFixed(0);
+            document.getElementById('totalAgreedAnnual').textContent = agreedTotalDemand.toLocaleString();
+            const totalVar = agreedDailyDemand > 0 ? ((totalActualDailyDemand - agreedDailyDemand) / agreedDailyDemand) * 100 : 0;
+            document.getElementById('totalVar').textContent = (totalVar > 0 ? '+' : '') + totalVar.toFixed(1) + '%';
+            updateStatus(document.getElementById('totalStatus'), totalVar, 'Over Capacity', 'Under Utilized', 'On Target');
+
+            // Summary Box
+            document.getElementById('summaryDemandVar').textContent = totalVar.toFixed(1) + '%';
+            document.getElementById('summaryDailyActual').textContent = totalActualDailyDemand.toFixed(0);
+            document.getElementById('summaryDailyAgreed').textContent = agreedDailyDemand.toFixed(0);
+            document.getElementById('summaryProductList').innerHTML = summaryProductListHTML;
+            document.getElementById('summaryReqTakt').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('summaryAgreedTakt').textContent = agreedTaktTime.toFixed(1);
+
+            // Table 5 Footer
+            processNames.forEach(proc => {
+                const totalUsedCell = document.querySelector(`[data-station-total-used="${proc}"]`);
+                const totalAvailableCell = document.querySelector(`[data-station-total-available="${proc}"]`);
+                const countCell = document.querySelector(`[data-station-count="${proc}"]`);
+                
+                const totalUsed = capacityTotals[proc];
+                const numStations = stationCounts[proc];
+                const totalAvailable = numStations * 100;
+
+                if(totalUsedCell) totalUsedCell.textContent = totalUsed.toFixed(0) + '%';
+                if(totalAvailableCell) totalAvailableCell.textContent = totalAvailable.toFixed(0) + '%';
+                if(countCell) countCell.textContent = numStations;
+                
+                if(totalUsed > totalAvailable) {
+                    totalUsedCell.className = "px-6 py-4 warning";
+                } else {
+                    totalUsedCell.className = "px-6 py-4 calculated";
+                }
+            });
+
+            // Table 4
+            let criticalIssuesHTML = '';
+            processNames.forEach(proc => {
+                const wact = processWacts[proc];
+                const row = document.querySelector(`[data-process-row="${proc}"]`);
+                if(!row) return;
+                
+                row.querySelector('[data-capacity="wact"]').textContent = wact.toFixed(1);
+                row.querySelector('[data-capacity="takt"]').textContent = actualRequiredTakt.toFixed(1);
+                row.querySelector('[data-capacity="agreedTakt"]').textContent = agreedTaktTime.toFixed(1);
+                
+                const stations = stationCounts[proc] || 1;
+                const utilization = (actualRequiredTakt > 0 && stations > 0) ? (wact / (actualRequiredTakt * stations)) * 100 : 0;
+                row.querySelector('[data-capacity="util"]').textContent = utilization.toFixed(0) + '%';
+                
+                const reqStations = actualRequiredTakt > 0 ? Math.ceil(wact / actualRequiredTakt) : 1;
+                row.querySelector('[data-capacity="req"]').textContent = reqStations;
+
+                const finalUtil = (reqStations > 0 && actualRequiredTakt > 0) ? (wact / (actualRequiredTakt * reqStations)) * 100 : 0;
+                row.querySelector('[data-capacity="finalUtil"]').textContent = finalUtil.toFixed(0) + '%';
+                
+                const demandStatusEl = row.querySelector('[data-capacity="demandStatus"]');
+                if (actualRequiredTakt < agreedTaktTime * 0.95 && agreedTaktTime > 0) { // 5% tolerance
+                    demandStatusEl.textContent = 'High Demand';
+                    demandStatusEl.className = 'warning';
+                } else if (actualRequiredTakt > agreedTaktTime * 1.05) {
+                    demandStatusEl.textContent = 'Low Demand';
+                    demandStatusEl.className = 'success';
+                } else {
+                    demandStatusEl.textContent = 'On Target';
+                    demandStatusEl.className = 'success';
+                }
+
+                const statusEl = row.querySelector('[data-capacity="status"]');
+                const targetUtil = parseFloat(document.getElementById('targetUtil').value) || 85;
+                statusEl.className = '';
+                if (utilization > 100) {
+                    statusEl.textContent = 'BOTTLENECK';
+                    statusEl.classList.add('error');
+                    criticalIssuesHTML += `<li><strong>${proc}:</strong> ${utilization.toFixed(0)}% utilization - Bottleneck found.</li>`;
+                } else if (utilization > 95) {
+                    statusEl.textContent = 'CRITICAL';
+                    statusEl.classList.add('error');
+                    criticalIssuesHTML += `<li><strong>${proc}:</strong> ${utilization.toFixed(0)}% utilization - Now CRITICAL.</li>`;
+                } else if (utilization > targetUtil) {
+                    statusEl.textContent = 'OK (Risk)';
+                    statusEl.classList.add('warning');
+                } else {
+                    statusEl.textContent = 'OK';
+                    statusEl.classList.add('success');
+                }
+            });
+            document.getElementById('criticalIssuesList').innerHTML = criticalIssuesHTML || '<li>No critical issues detected.</li>';
+
+        }
+
+        function updateCell(id, value) {
+            const sanitizedId = id.replace(/\s/g, '');
+            const element = document.querySelector(`[data-calculated="${sanitizedId}"]`);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+
+        function updateStatus(element, value, posText, negText, neutralText) {
+             if (!element) return;
+             element.className = ''; // Reset classes
+             if (value > 5) {
+                 element.textContent = posText;
+                 element.classList.add('warning');
+             } else if (value < -5) {
+                 element.textContent = negText;
+                 element.classList.add('error');
+             } else {
+                 element.textContent = neutralText;
+                 element.classList.add('success');
+             }
+        }
+
+        window.onload = calculate;
+
+    </script>
+</body>
+</html>
