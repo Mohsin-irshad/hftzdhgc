@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Operations Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #2c3e50;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            color: white;
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .tab.active {
+            background: #3498db;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52,152,219,0.3);
+        }
+        
+        .input-cell {
+            background: #fffbf0;
+        }
+
+        .input-cell-with-eff {
+            background: #fffbf0;
+            vertical-align: top;
+        }
+        .input-cell-with-eff input {
+            margin-bottom: 2px;
+        }
+
+        .effective-time-display {
+            font-size: 11px;
+            color: #555;
+            font-style: italic;
+            margin-top: 4px;
+        }
+        
+        .calculated {
+            background: #e8f5e9;
+            font-weight: 600;
+        }
+        
+        .warning {
+            background: #fff3e0;
+            color: #f57c00;
+            font-weight: 600;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            font-weight: 600;
+        }
+        
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .metric-card {
+            display: inline-block;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .bar {
+            height: 30px;
+            margin: 10px 0;
+            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-label {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .action-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .priority-high {
+            border-left-color: #e74c3c;
+            background: #ffebee;
+        }
+        
+        .priority-medium {
+            border-left-color: #f39c12;
+            background: #fff3e0;
+        }
+        
+        .priority-low {
+            border-left-color: #27ae60;
+            background: #e8f5e9;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .scenario-controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+        }
+        
+        .control-group {
+            flex: 1;
+        }
+        
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        @media print {
+            .tabs, .button, .scenario-controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 Enhanced Operations Analyzer</h1>
+            <p>Comprehensive Capacity Planning & Optimization Tool</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('basic')">Basic Analysis</button>
+            <button class="tab" onclick="showSection('advanced')">Advanced Metrics</button>
+            <button class="tab" onclick="showSection('financial')">Financial Analysis</button>
+            <button class="tab" onclick="showSection('labor')">Labor Planning</button>
+            <button class="tab" onclick="showSection('scenario')">Scenario Planning</button>
+            <button class="tab" onclick="showSection('visual')">Visual Dashboard</button>
+            <button class="tab" onclick="showSection('actions')">Action Items</button>
+        </div>
+        
+        <div class="content">
+            <!-- Basic Analysis Section -->
+            <div id="basic" class="section active">
+                <h2 class="section-title">1. Global Inputs & Agreed Annual Demand</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Shifts per Day</td>
+                            <td class="input-cell"><input type="number" id="shifts" value="1" onchange="calculate()"></td>
+                            <td>Number of production shifts</td>
+                        </tr>
+                        <tr>
+                            <td>Hours per Shift</td>
+                            <td class="input-cell"><input type="number" id="hours" value="8" onchange="calculate()"></td>
+                            <td>Productive hours per shift</td>
+                        </tr>
+                        <tr>
+                            <td>Days per Week</td>
+                            <td class="input-cell"><input type="number" id="days" value="5" onchange="calculate()"></td>
+                            <td>Working days</td>
+                        </tr>
+                        <tr>
+                            <td>Weeks per Year</td>
+                            <td class="input-cell"><input type="number" id="weeks" value="50" onchange="calculate()"></td>
+                            <td>Accounts for holidays/shutdowns</td>
+                        </tr>
+                        <tr>
+                            <td>OEE (%)</td>
+                            <td class="input-cell"><input type="number" id="oee" value="80" onchange="calculate()"></td>
+                            <td>Overall Equipment Effectiveness</td>
+                        </tr>
+                        <tr>
+                            <td>Target Utilization (%) - Non-Bottleneck</td>
+                            <td class="input-cell"><input type="number" id="targetUtil" value="85" onchange="calculate()"></td>
+                            <td>Max recommended utilization</td>
+                        </tr>
+                        <tr>
+                            <td>First Pass Yield (%)</td>
+                            <td class="input-cell"><input type="number" id="fpy" value="95" onchange="calculate()"></td>
+                            <td>Quality metric</td>
+                        </tr>
+                        <tr style="background: #fff3e0;">
+                            <td><strong>Setup Frequency (setups/day)</strong></td>
+                            <td class="input-cell"><input type="number" id="setupFreq" value="4" onchange="calculate()" style="font-weight: bold;"></td>
+                            <td><strong>Average changeovers per day</strong></td>
+                        </tr>
+                        <tr style="background: #fff3e0;">
+                            <td><strong>Total Setup Time (min/day)</strong></td>
+                            <td class="calculated" id="totalSetupTime" style="font-weight: bold;">78</td>
+                            <td><strong>Sum of all product setup times × frequency</strong></td>
+                        </tr>
+                        <tr style="background: #e3f2fd;">
+                            <td><strong>AGREED Total Annual Demand (Contract)</strong></td>
+                            <td class="input-cell"><input type="number" id="agreedDemand" value="80000" onchange="calculate()" style="font-weight: bold; background: #fff3e0;"></td>
+                            <td><strong>Baseline commitment to customer</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">1b. Agreed Product Mix (Contract Baseline)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Agreed Mix %</th>
+                            <th>Agreed Annual Units</th>
+                            <th>Agreed Daily Units</th>
+                            <th>Check Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Product A</td>
+                            <td class="input-cell"><input type="number" id="agreedMixA" value="12.5" step="0.1" onchange="calculate()"></td>
+                            <td class="calculated" id="agreedCalcAnnualA">10,000</td>
+                            <td class="calculated" id="agreedCalcDailyA">40</td>
+                            <td rowspan="4" style="vertical-align: middle; text-align: center;">
+                                <div class="calculated" id="mixTotalCheck" style="font-size: 18px; font-weight: bold;">100%</div>
+                                <div id="mixCheckStatus" class="success" style="margin-top: 5px;">✓ Valid</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Product B</td>
+                            <td class="input-cell"><input type="number" id="agreedMixB" value="25" step="0.1" onchange="calculate()"></td>
+                            <td class="calculated" id="agreedCalcAnnualB">20,000</td>
+                            <td class="calculated" id="agreedCalcDailyB">80</td>
+                        </tr>
+                        <tr>
+                            <td>Product C</td>
+                            <td class="input-cell"><input type="number" id="agreedMixC" value="37.5" step="0.1" onchange="calculate()"></td>
+                            <td class="calculated" id="agreedCalcAnnualC">30,000</td>
+                            <td class="calculated" id="agreedCalcDailyC">120</td>
+                        </tr>
+                        <tr>
+                            <td>Product D</td>
+                            <td class="input-cell"><input type="number" id="agreedMixD" value="25" step="0.1" onchange="calculate()"></td>
+                            <td class="calculated" id="agreedCalcAnnualD">20,000</td>
+                            <td class="calculated" id="agreedCalcDailyD">80</td>
+                        </tr>
+                        <tr style="background: #ecf0f1; font-weight: bold;">
+                            <td><strong>TOTAL</strong></td>
+                            <td class="calculated" id="mixTotal"><strong>100.0%</strong></td>
+                            <td class="calculated" id="agreedTotalAnnual"><strong>80,000</strong></td>
+                            <td class="calculated" id="agreedTotalDaily"><strong>320</strong></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">2. Takt Time Calculation (Based on Agreed Demand)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Formula</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Agreed Annual Demand (from Table 1)</td>
+                            <td class="calculated" id="totalDemand">80,000</td>
+                            <td>Contract baseline</td>
+                        </tr>
+                        <tr>
+                            <td>Agreed Daily Demand</td>
+                            <td class="calculated" id="agreedDaily">320</td>
+                            <td>Annual ÷ Working Days</td>
+                        </tr>
+                        <tr>
+                            <td>Total Available Seconds/Year</td>
+                            <td class="calculated" id="totalSeconds">7,200,000</td>
+                            <td>Shifts × Hours × Days × Weeks × 3600</td>
+                        </tr>
+                        <tr>
+                            <td>Setup Loss Seconds/Year</td>
+                            <td class="warning" id="setupLoss">468,000</td>
+                            <td>Setup Time × Frequency × Working Days × 60</td>
+                        </tr>
+                        <tr>
+                            <td>Net Available Seconds (after setup)</td>
+                            <td class="calculated" id="netSeconds">6,732,000</td>
+                            <td>Total - Setup Loss</td>
+                        </tr>
+                        <tr>
+                            <td>Effective Production Seconds/Year</td>
+                            <td class="calculated" id="effectiveSeconds">5,385,600</td>
+                            <td>Net Seconds × OEE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AGREED TAKT TIME (seconds/piece)</strong></td>
+                            <td class="success" id="taktTime">67.3</td>
+                            <td>Effective Seconds ÷ Agreed Demand</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">3. Product & Process Data (Actual Customer Demand vs Agreed)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Product</th>
+                            <th colspan="4" style="text-align: center; background: #2c3e50;">Customer Demand (Post-SOP)</th>
+                            <th colspan="2" style="text-align: center; background: #16a085;">Agreed Baseline</th>
+                            <th rowspan="2">Variance %</th>
+                            <th rowspan="2">Status</th>
+                        </tr>
+                        <tr>
+                            <th style="background: #34495e;">Daily Actual</th>
+                            <th style="background: #34495e;">Weekly Actual</th>
+                            <th style="background: #34495e;">Annual Projection</th>
+                            <th style="background: #34495e;">Mix %</th>
+                            <th style="background: #1abc9c;">Daily Agreed</th>
+                            <th style="background: #1abc9c;">Annual Agreed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Product A</td>
+                            <td class="input-cell"><input type="number" id="dailyA" value="40" onchange="calculate()"></td>
+                            <td class="calculated" id="weeklyA">200</td>
+                            <td class="calculated" id="annualA">10,000</td>
+                            <td class="calculated" id="mixA">12.5%</td>
+                            <td class="calculated" id="agreedDailyA">40</td>
+                            <td class="calculated" id="agreedAnnualA">10,000</td>
+                            <td class="calculated" id="varA">0%</td>
+                            <td class="success" id="statusA">On Target</td>
+                        </tr>
+                        <tr>
+                            <td>Product B</td>
+                            <td class="input-cell"><input type="number" id="dailyB" value="90" onchange="calculate()"></td>
+                            <td class="calculated" id="weeklyB">450</td>
+                            <td class="calculated" id="annualB">22,500</td>
+                            <td class="calculated" id="mixB">25.9%</td>
+                            <td class="calculated" id="agreedDailyB">80</td>
+                            <td class="calculated" id="agreedAnnualB">20,000</td>
+                            <td class="warning" id="varB">+12.5%</td>
+                            <td class="warning" id="statusB">Over Demand</td>
+                        </tr>
+                        <tr>
+                            <td>Product C</td>
+                            <td class="input-cell"><input type="number" id="dailyC" value="120" onchange="calculate()"></td>
+                            <td class="calculated" id="weeklyC">600</td>
+                            <td class="calculated" id="annualC">30,000</td>
+                            <td class="calculated" id="mixC">34.5%</td>
+                            <td class="calculated" id="agreedDailyC">120</td>
+                            <td class="calculated" id="agreedAnnualC">30,000</td>
+                            <td class="calculated" id="varC">0%</td>
+                            <td class="success" id="statusC">On Target</td>
+                        </tr>
+                        <tr>
+                            <td>Product D</td>
+                            <td class="input-cell"><input type="number" id="dailyD" value="96" onchange="calculate()"></td>
+                            <td class="calculated" id="weeklyD">480</td>
+                            <td class="calculated" id="annualD">24,000</td>
+                            <td class="calculated" id="mixD">27.6%</td>
+                            <td class="calculated" id="agreedDailyD">80</td>
+                            <td class="calculated" id="agreedAnnualD">20,000</td>
+                            <td class="warning" id="varD">+20%</td>
+                            <td class="warning" id="statusD">Over Demand</td>
+                        </tr>
+                        <tr style="background: #ecf0f1; font-weight: bold;">
+                            <td><strong>TOTAL</strong></td>
+                            <td class="calculated" id="totalDaily"><strong>346</strong></td>
+                            <td class="calculated" id="totalWeekly"><strong>1,730</strong></td>
+                            <td class="calculated" id="totalAnnual"><strong>86,500</strong></td>
+                            <td class="calculated"><strong>100%</strong></td>
+                            <td class="calculated" id="totalAgreedDaily"><strong>320</strong></td>
+                            <td class="calculated"><strong>80,000</strong></td>
+                            <td class="warning" id="totalVar"><strong>+8.1%</strong></td>
+                            <td class="warning" id="totalStatus"><strong>Over Capacity</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">3a. Base Process Cycle Times (at 1 Station) & Setup</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Cutting (sec)</th>
+                            <th>Welding (sec)</th>
+                            <th>Bending (sec)</th>
+                            <th>Assembly (sec)</th>
+                            <th>Setup Time (min)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Product A</td>
+                            <td class="input-cell"><input type="number" id="baseCutA" value="25" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseWeldA" value="55" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseBendA" value="40" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseAssyA" value="80" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="setupA" value="15" onchange="calculate()"></td>
+                        </tr>
+                        <tr>
+                            <td>Product B</td>
+                            <td class="input-cell"><input type="number" id="baseCutB" value="30" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseWeldB" value="65" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseBendB" value="45" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseAssyB" value="95" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="setupB" value="20" onchange="calculate()"></td>
+                        </tr>
+                        <tr>
+                            <td>Product C</td>
+                            <td class="input-cell"><input type="number" id="baseCutC" value="35" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseWeldC" value="70" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseBendC" value="50" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseAssyC" value="100" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="setupC" value="25" onchange="calculate()"></td>
+                        </tr>
+                        <tr>
+                            <td>Product D</td>
+                            <td class="input-cell"><input type="number" id="baseCutD" value="28" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseWeldD" value="60" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseBendD" value="42" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="baseAssyD" value="90" onchange="calculate()"></td>
+                            <td class="input-cell"><input type="number" id="setupD" value="18" onchange="calculate()"></td>
+                        </tr>
+                         <tr style="background: #ecf0f1; font-weight: bold;">
+                            <td colspan="4"><strong>Average Setup Time</strong></td>
+                            <td><strong>-</strong></td>
+                            <td class="calculated" id="avgSetup"><strong>19.5</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="section-title">3b. Effective Cycle Times & Bottleneck Analysis</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Cutting (sec)</th>
+                            <th>Welding (sec)</th>
+                            <th>Bending (sec)</th>
+                            <th>Assembly (sec)</th>
+                            <th>Bottleneck Cycle (sec)</th>
+                            <th>Bottleneck Process</th>
+                            <th>Actual Takt Required</th>
+                            <th>Takt Gap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Product A</td>
+                            <td class="calculated" id="effCutA_display"></td>
+                            <td class="calculated" id="effWeldA_display"></td>
+                            <td class="calculated" id="effBendA_display"></td>
+                            <td class="calculated" id="effAssyA_display"></td>
+                            <td class="calculated" id="bottleneckA">80</td>
+                            <td class="calculated" id="bottleProcessA">Assembly</td>
+                            <td class="calculated" id="reqTaktA">62.2</td>
+                            <td class="error" id="taktGapA">TIGHT</td>
+                        </tr>
+                        <tr>
+                            <td>Product B</td>
+                            <td class="calculated" id="effCutB_display"></td>
+                            <td class="calculated" id="effWeldB_display"></td>
+                            <td class="calculated" id="effBendB_display"></td>
+                            <td class="calculated" id="effAssyB_display"></td>
+                            <td class="calculated" id="bottleneckB">95</td>
+                            <td class="calculated" id="bottleProcessB">Assembly</td>
+                            <td class="calculated" id="reqTaktB">62.2</td>
+                            <td class="error" id="taktGapB">OVER</td>
+                        </tr>
+                        <tr>
+                            <td>Product C</td>
+                            <td class="calculated" id="effCutC_display"></td>
+                            <td class="calculated" id="effWeldC_display"></td>
+                            <td class="calculated" id="effBendC_display"></td>
+                            <td class="calculated" id="effAssyC_display"></td>
+                            <td class="calculated" id="bottleneckC">100</td>
+                            <td class="calculated" id="bottleProcessC">Assembly</td>
+                            <td class="calculated" id="reqTaktC">62.2</td>
+                            <td class="error" id="taktGapC">OVER</td>
+                        </tr>
+                        <tr>
+                            <td>Product D</td>
+                            <td class="calculated" id="effCutD_display"></td>
+                            <td class="calculated" id="effWeldD_display"></td>
+                            <td class="calculated" id="effBendD_display"></td>
+                            <td class="calculated" id="effAssyD_display"></td>
+                            <td class="calculated" id="bottleneckD">90</td>
+                            <td class="calculated" id="bottleProcessD">Assembly</td>
+                            <td class="calculated" id="reqTaktD">62.2</td>
+                            <td class="error" id="taktGapD">OVER</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #f57c00; margin: 0 0 10px 0;">⚠️ Demand Analysis Summary</h3>
+                    <p><strong>Customer actual demand vs contracted agreement:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Total Daily: 346 units actual vs 320 units agreed (+8.1%)</li>
+                        <li>Product mix variances shown above based on your agreed mix inputs</li>
+                        <li>This requires actual takt time of 62.2 seconds vs agreed 67.3 seconds</li>
+                        <li>Current bottleneck (Assembly) cannot support this demand without additional capacity</li>
+                        <li>Welding also pushed into bottleneck status due to combined demand and setup losses</li>
+                    </ul>
+                </div>
+                
+                <h2 class="section-title">4. Capacity Analysis (Based on Actual Customer Demand)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>WACT (sec)</th>
+                            <th>Agreed Takt</th>
+                            <th>Required Takt</th>
+                            <th>Demand Status</th>
+                            <th>Current Stations</th>
+                            <th>Utilization %</th>
+                            <th>Status</th>
+                            <th>Required Stations</th>
+                            <th>Final Util %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cutting</td>
+                            <td class="calculated" id="wactCut">31.1</td>
+                            <td class="calculated" id="agreedTaktCut">67.3</td>
+                            <td class="calculated" id="taktCut">62.2</td>
+                            <td class="warning" id="demandStatusCut">Over +8%</td>
+                            <td class="input-cell"><input type="number" id="stationsCut" value="1" onchange="calculate()"></td>
+                            <td class="calculated" id="utilCut">50%</td>
+                            <td class="success" id="statusCut">OK</td>
+                            <td class="calculated" id="reqCut">1</td>
+                            <td class="calculated" id="finalUtilCut">50%</td>
+                        </tr>
+                        <tr>
+                            <td>Welding</td>
+                            <td class="calculated" id="wactWeld">64.6</td>
+                            <td class="calculated" id="agreedTaktWeld">67.3</td>
+                            <td class="calculated" id="taktWeld">62.2</td>
+                            <td class="warning" id="demandStatusWeld">Over +8%</td>
+                            <td class="input-cell"><input type="number" id="stationsWeld" value="1" onchange="calculate()"></td>
+                            <td class="calculated" id="utilWeld">104%</td>
+                            <td class="error" id="statusWeld">BOTTLENECK</td>
+                            <td class="calculated" id="reqWeld">2</td>
+                            <td class="calculated" id="finalUtilWeld">52%</td>
+                        </tr>
+                        <tr>
+                            <td>Bending</td>
+                            <td class="calculated" id="wactBend">45.6</td>
+                            <td class="calculated" id="agreedTaktBend">67.3</td>
+                            <td class="calculated" id="taktBend">62.2</td>
+                            <td class="warning" id="demandStatusBend">Over +8%</td>
+                            <td class="input-cell"><input type="number" id="stationsBend" value="1" onchange="calculate()"></td>
+                            <td class="calculated" id="utilBend">73%</td>
+                            <td class="success" id="statusBend">OK</td>
+                            <td class="calculated" id="reqBend">1</td>
+                            <td class="calculated" id="finalUtilBend">73%</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly</td>
+                            <td class="calculated" id="wactAssy">94.3</td>
+                            <td class="calculated" id="agreedTaktAssy">67.3</td>
+                            <td class="calculated" id="taktAssy">62.2</td>
+                            <td class="warning" id="demandStatusAssy">Over +8%</td>
+                            <td class="input-cell"><input type="number" id="stationsAssy" value="1" onchange="calculate()"></td>
+                            <td class="calculated" id="utilAssy">152%</td>
+                            <td class="error" id="statusAssy">SEVERE BOTTLENECK</td>
+                            <td class="calculated" id="reqAssy">2</td>
+                            <td class="calculated" id="finalUtilAssy">76%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="background: #ffebee; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #c62828; margin: 0 0 10px 0;">🔴 Critical Capacity Issues with Setup Losses & Actual Demand</h3>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Demand Status:</strong> All processes showing "Over +8%" - customer demanding more than contracted</li>
+                        <li><strong>Takt Time Gap:</strong> Need 62.2 sec/unit but agreed to 67.3 sec/unit (8% faster required)</li>
+                        <li><strong>Assembly:</strong> 152% utilization - Severe bottleneck, immediate 2nd station critical</li>
+                        <li><strong>Welding:</strong> 104% utilization - Now also a BOTTLENECK due to combined pressure</li>
+                        <li><strong>Action Required:</strong> Either negotiate demand back to agreed levels OR add capacity immediately</li>
+                    </ul>
+                </div>
+                
+                <h2 class="section-title">5. Impact Analysis: Agreed vs Actual Demand (With Setup Losses)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Agreed (No Setup)</th>
+                            <th>Agreed (With Setup)</th>
+                            <th>Actual (With Setup)</th>
+                            <th>Total Impact</th>
+                            <th>Action Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Daily Production</td>
+                            <td>320 units</td>
+                            <td>320 units</td>
+                            <td class="warning">346 units</td>
+                            <td>+26 units/day</td>
+                            <td>Review capacity plan</td>
+                        </tr>
+                        <tr>
+                            <td>Required Takt Time</td>
+                            <td>72.0 seconds</td>
+                            <td>67.3 seconds</td>
+                            <td class="error">62.2 seconds</td>
+                            <td>-9.8 seconds</td>
+                            <td>Major speed improvement</td>
+                        </tr>
+                        <tr>
+                            <td>Setup Loss/Day</td>
+                            <td>0 min</td>
+                            <td class="warning">78 min</td>
+                            <td class="warning">78 min</td>
+                            <td>-1.3 hours/day</td>
+                            <td>SMED implementation</td>
+                        </tr>
+                        <tr>
+                            <td>Welding Utilization</td>
+                            <td>89%</td>
+                            <td class="warning">96%</td>
+                            <td class="error">104%</td>
+                            <td>+15%</td>
+                            <td>Add station or shifts</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly Utilization</td>
+                            <td class="error">130%</td>
+                            <td class="error">139%</td>
+                            <td class="error">152%</td>
+                            <td>+22%</td>
+                            <td>Add 2nd station urgently</td>
+                        </tr>
+                        <tr>
+                            <td>Bottleneck Processes</td>
+                            <td>1 (Assembly)</td>
+                            <td>1 (Assembly)</td>
+                            <td class="error">2 (Assembly, Welding)</td>
+                            <td>+1 bottleneck</td>
+                            <td>Multi-station expansion</td>
+                        </tr>
+                        <tr>
+                            <td>Total Stations Needed</td>
+                            <td>5</td>
+                            <td>5</td>
+                            <td class="error">6</td>
+                            <td>+1 station</td>
+                            <td>$290,000 investment</td>
+                        </tr>
+                        <tr>
+                            <td>Risk Level</td>
+                            <td class="warning">Medium</td>
+                            <td class="error">High</td>
+                            <td class="error">Critical</td>
+                            <td>2-level increase</td>
+                            <td>Crisis management mode</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #f57c00; margin: 0 0 10px 0;">📊 Compound Effect Analysis</h3>
+                    <p><strong>Three factors creating a perfect storm:</strong></p>
+                    <ol style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Demand Increase:</strong> +8.1% over contract (26 units/day)</li>
+                        <li><strong>Setup Losses:</strong> 78 minutes/day (6.5% capacity loss)</li>
+                        <li><strong>Product Mix Shift:</strong> Higher bottleneck products (B & D increased)</li>
+                    </ol>
+                    <p><strong>Combined Impact:</strong> Effective capacity requirement increased by ~15%</p>
+                    <p><strong>Critical Decision Point:</strong> Either reduce demand, add shifts, or invest in 2+ new stations</p>
+                </div>
+                
+                <h2 class="section-title">6. Capacity Decision Matrix (Agreed vs Actual)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Utilization @ Agreed</th>
+                            <th>Utilization @ Actual</th>
+                            <th>Demand Pressure</th>
+                            <th>Capacity Gap</th>
+                            <th>Recommended Action</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cutting</td>
+                            <td class="success">46%</td>
+                            <td class="success">50%</td>
+                            <td>+8%</td>
+                            <td>None (50% buffer)</td>
+                            <td>Monitor only</td>
+                            <td class="success">Low</td>
+                        </tr>
+                        <tr>
+                            <td>Welding</td>
+                            <td class="warning">96%</td>
+                            <td class="error">104%</td>
+                            <td>+8%</td>
+                            <td>-4% (Need 2nd station)</td>
+                            <td>Add station OR reduce demand</td>
+                            <td class="error">Critical</td>
+                        </tr>
+                        <tr>
+                            <td>Bending</td>
+                            <td class="success">68%</td>
+                            <td class="success">73%</td>
+                            <td>+8%</td>
+                            <td>None (27% buffer)</td>
+                            <td>Monitor, plan for growth</td>
+                            <td class="success">Low</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly</td>
+                            <td class="error">140%</td>
+                            <td class="error">152%</td>
+                            <td>+8%</td>
+                            <td>-52% (Need 2nd station)</td>
+                            <td>IMMEDIATE 2nd station required</td>
+                            <td class="error">Critical</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #2e7d32; margin: 0 0 10px 0;">✅ Capacity Scenarios & Recommendations</h3>
+                    <table style="width: 100%; margin-top: 10px;">
+                        <thead>
+                            <tr style="background: #c8e6c9;">
+                                <th>Option</th>
+                                <th>Description</th>
+                                <th>Investment</th>
+                                <th>Time</th>
+                                <th>Pros</th>
+                                <th>Cons</th>
+                            </tr>
+                        </thead>
+                        <tbody style="background: white;">
+                            <tr>
+                                <td><strong>Option 1</strong></td>
+                                <td>Negotiate demand back to agreed (320/day)</td>
+                                <td>$0</td>
+                                <td>Immediate</td>
+                                <td>Only need Assembly station</td>
+                                <td>Lost revenue ($325k/yr)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Option 2</strong></td>
+                                <td>Add Assembly + Welding stations</td>
+                                <td>$290,000</td>
+                                <td>6-8 weeks</td>
+                                <td>Meet all demand</td>
+                                <td>High capital investment</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Option 3</strong></td>
+                                <td>Add overtime (2 hrs/day)</td>
+                                <td>$180,000/yr</td>
+                                <td>1 week</td>
+                                <td>Quick implementation</td>
+                                <td>Worker fatigue, ongoing cost</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Option 4</strong></td>
+                                <td>Reduce setups (SMED) + Assembly station</td>
+                                <td>$165,000</td>
+                                <td>8 weeks</td>
+                                <td>Improves efficiency</td>
+                                <td>Welding still at risk</td>
+                            </tr>
+                            <tr style="background: #c8e6c9;">
+                                <td><strong>Recommended</strong></td>
+                                <td><strong>Hybrid: Assembly station + Welding overtime</strong></td>
+                                <td><strong>$140,000 + $45k/yr</strong></td>
+                                <td><strong>4 weeks</strong></td>
+                                <td><strong>Balanced approach</strong></td>
+                                <td><strong>Best risk/reward</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Advanced Metrics Section -->
+            <div id="advanced" class="section">
+                <h2 class="section-title">Advanced Performance Metrics</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Current</th>
+                            <th>Target</th>
+                            <th>Gap</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Overall Line Efficiency</td>
+                            <td class="calculated">71.3%</td>
+                            <td>85%</td>
+                            <td class="warning">-13.7%</td>
+                            <td class="warning">Needs Improvement</td>
+                        </tr>
+                        <tr>
+                            <td>Bottleneck Utilization</td>
+                            <td class="calculated">130%</td>
+                            <td>95%</td>
+                            <td class="error">+35%</td>
+                            <td class="error">Over Capacity</td>
+                        </tr>
+                        <tr>
+                            <td>Line Balance Efficiency</td>
+                            <td class="calculated">68.5%</td>
+                            <td>90%</td>
+                            <td class="warning">-21.5%</td>
+                            <td class="warning">Imbalanced</td>
+                        </tr>
+                        <tr>
+                            <td>Total Setup Time/Day (hours)</td>
+                            <td class="calculated">3.2</td>
+                            <td>2.0</td>
+                            <td class="warning">+1.2</td>
+                            <td class="warning">Reduce Changeovers</td>
+                        </tr>
+                        <tr>
+                            <td>Quality Loss (FPY Impact)</td>
+                            <td class="calculated">5%</td>
+                            <td>2%</td>
+                            <td class="warning">+3%</td>
+                            <td class="warning">Quality Focus Needed</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">Changeover Analysis</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Transition</th>
+                            <th>Frequency/Week</th>
+                            <th>Setup Time (min)</th>
+                            <th>Weekly Loss (hours)</th>
+                            <th>Annual Loss (hours)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A → B</td>
+                            <td class="input-cell"><input type="number" value="3" onchange="calculate()"></td>
+                            <td>17.5</td>
+                            <td class="calculated">0.875</td>
+                            <td class="calculated">43.75</td>
+                        </tr>
+                        <tr>
+                            <td>B → C</td>
+                            <td class="input-cell"><input type="number" value="5" onchange="calculate()"></td>
+                            <td>22.5</td>
+                            <td class="calculated">1.875</td>
+                            <td class="calculated">93.75</td>
+                        </tr>
+                        <tr>
+                            <td>C → D</td>
+                            <td class="input-cell"><input type="number" value="4" onchange="calculate()"></td>
+                            <td>21.5</td>
+                            <td class="calculated">1.433</td>
+                            <td class="calculated">71.67</td>
+                        </tr>
+                        <tr>
+                            <td>D → A</td>
+                            <td class="input-cell"><input type="number" value="3" onchange="calculate()"></td>
+                            <td>16.5</td>
+                            <td class="calculated">0.825</td>
+                            <td class="calculated">41.25</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td><strong>15</strong></td>
+                            <td><strong>-</strong></td>
+                            <td class="warning"><strong>5.0</strong></td>
+                            <td class="warning"><strong>250.4</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Financial Analysis Section -->
+            <div id="financial" class="section">
+                <h2 class="section-title">Cost Analysis per Process</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Cost/Hour ($)</th>
+                            <th>Cost/Minute ($)</th>
+                            <th>Annual Operating Hours</th>
+                            <th>Annual Cost ($)</th>
+                            <th>Cost per Unit ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cutting</td>
+                            <td class="input-cell"><input type="number" value="85" onchange="calculate()"></td>
+                            <td class="calculated">1.42</td>
+                            <td class="calculated">2,000</td>
+                            <td class="calculated">170,000</td>
+                            <td class="calculated">2.13</td>
+                        </tr>
+                        <tr>
+                            <td>Welding</td>
+                            <td class="input-cell"><input type="number" value="120" onchange="calculate()"></td>
+                            <td class="calculated">2.00</td>
+                            <td class="calculated">2,000</td>
+                            <td class="calculated">240,000</td>
+                            <td class="calculated">3.00</td>
+                        </tr>
+                        <tr>
+                            <td>Bending</td>
+                            <td class="input-cell"><input type="number" value="95" onchange="calculate()"></td>
+                            <td class="calculated">1.58</td>
+                            <td class="calculated">2,000</td>
+                            <td class="calculated">190,000</td>
+                            <td class="calculated">2.38</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly</td>
+                            <td class="input-cell"><input type="number" value="75" onchange="calculate()"></td>
+                            <td class="calculated">1.25</td>
+                            <td class="calculated">2,000</td>
+                            <td class="calculated">150,000</td>
+                            <td class="calculated">1.88</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td><strong>375</strong></td>
+                            <td><strong>6.25</strong></td>
+                            <td><strong>-</strong></td>
+                            <td class="calculated"><strong>750,000</strong></td>
+                            <td class="calculated"><strong>9.38</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">Investment Analysis - Additional Assembly Station</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Investment Item</th>
+                            <th>Cost ($)</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Equipment Purchase</td>
+                            <td class="input-cell"><input type="number" value="125000" onchange="calculate()"></td>
+                            <td>Assembly station equipment</td>
+                        </tr>
+                        <tr>
+                            <td>Installation & Setup</td>
+                            <td class="input-cell"><input type="number" value="15000" onchange="calculate()"></td>
+                            <td>Including training</td>
+                        </tr>
+                        <tr>
+                            <td>Additional Annual Operating Cost</td>
+                            <td class="input-cell"><input type="number" value="150000" onchange="calculate()"></td>
+                            <td>Labor, maintenance, utilities</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Initial Investment</strong></td>
+                            <td class="calculated"><strong>140,000</strong></td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">ROI Calculation</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Calculation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Current Lost Revenue (Bottleneck)</td>
+                            <td class="calculated">$480,000</td>
+                            <td>30% capacity loss × $50/unit margin × 32,000 units</td>
+                        </tr>
+                        <tr>
+                            <td>Additional Capacity Gained</td>
+                            <td class="calculated">32,000 units</td>
+                            <td>Eliminating bottleneck</td>
+                        </tr>
+                        <tr>
+                            <td>Revenue per Unit</td>
+                            <td class="input-cell"><input type="number" value="50" onchange="calculate()"></td>
+                            <td>Average margin</td>
+                        </tr>
+                        <tr>
+                            <td>Annual Benefit</td>
+                            <td class="success">$1,600,000</td>
+                            <td>32,000 × $50</td>
+                        </tr>
+                        <tr>
+                            <td>Payback Period</td>
+                            <td class="success">1.05 months</td>
+                            <td>Investment ÷ Monthly Benefit</td>
+                        </tr>
+                        <tr>
+                            <td>5-Year NPV (10% discount)</td>
+                            <td class="success">$4,924,184</td>
+                            <td>PV of cash flows - investment</td>
+                        </tr>
+                        <tr>
+                            <td>IRR</td>
+                            <td class="success">1143%</td>
+                            <td>Internal Rate of Return</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Labor Planning Section -->
+            <div id="labor" class="section">
+                <h2 class="section-title">Operator Requirements by Station</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Stations</th>
+                            <th>Operators/Station</th>
+                            <th>Total Operators/Shift</th>
+                            <th>All Shifts</th>
+                            <th>Vacation/Absence Coverage (15%)</th>
+                            <th>Total Headcount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cutting</td>
+                            <td class="calculated">1</td>
+                            <td class="input-cell"><input type="number" value="1" onchange="calculate()"></td>
+                            <td class="calculated">1</td>
+                            <td class="calculated">1</td>
+                            <td class="calculated">0.15</td>
+                            <td class="calculated">2</td>
+                        </tr>
+                        <tr>
+                            <td>Welding</td>
+                            <td class="calculated">1</td>
+                            <td class="input-cell"><input type="number" value="2" onchange="calculate()"></td>
+                            <td class="calculated">2</td>
+                            <td class="calculated">2</td>
+                            <td class="calculated">0.30</td>
+                            <td class="calculated">3</td>
+                        </tr>
+                        <tr>
+                            <td>Bending</td>
+                            <td class="calculated">1</td>
+                            <td class="input-cell"><input type="number" value="1" onchange="calculate()"></td>
+                            <td class="calculated">1</td>
+                            <td class="calculated">1</td>
+                            <td class="calculated">0.15</td>
+                            <td class="calculated">2</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly (Current)</td>
+                            <td class="calculated">1</td>
+                            <td class="input-cell"><input type="number" value="2" onchange="calculate()"></td>
+                            <td class="calculated">2</td>
+                            <td class="calculated">2</td>
+                            <td class="calculated">0.30</td>
+                            <td class="calculated">3</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly (Proposed)</td>
+                            <td class="success">2</td>
+                            <td class="input-cell"><input type="number" value="2" onchange="calculate()"></td>
+                            <td class="success">4</td>
+                            <td class="success">4</td>
+                            <td class="calculated">0.60</td>
+                            <td class="success">5</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Current</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><strong>6</strong></td>
+                            <td><strong>6</strong></td>
+                            <td><strong>0.90</strong></td>
+                            <td class="warning"><strong>10</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Proposed</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><strong>8</strong></td>
+                            <td><strong>8</strong></td>
+                            <td><strong>1.20</strong></td>
+                            <td class="success"><strong>12</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">Skills Matrix Requirements</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Skill Level</th>
+                            <th>Cutting</th>
+                            <th>Welding</th>
+                            <th>Bending</th>
+                            <th>Assembly</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Expert (Level 3)</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>4</td>
+                        </tr>
+                        <tr>
+                            <td>Qualified (Level 2)</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>Trainee (Level 1)</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Scenario Planning Section -->
+            <div id="scenario" class="section">
+                <h2 class="section-title">What-If Scenario Analysis</h2>
+                
+                <div class="scenario-controls">
+                    <div class="control-group">
+                        <div class="control-label">Demand Variation (%)</div>
+                        <input type="range" id="demandVar" min="-30" max="30" value="0" onchange="updateScenario()">
+                        <span id="demandVarValue">0%</span>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">OEE Improvement (%)</div>
+                        <input type="range" id="oeeImprove" min="0" max="20" value="0" onchange="updateScenario()">
+                        <span id="oeeImproveValue">0%</span>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">Shift Pattern</div>
+                        <select id="shiftPattern" onchange="updateScenario()">
+                            <option value="1">1 Shift (8 hrs)</option>
+                            <option value="2">2 Shifts (16 hrs)</option>
+                            <option value="3">3 Shifts (24 hrs)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scenario Metric</th>
+                            <th>Current</th>
+                            <th>Scenario</th>
+                            <th>Impact</th>
+                            <th>Feasibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Annual Demand</td>
+                            <td>80,000</td>
+                            <td class="calculated" id="scenDemand">80,000</td>
+                            <td class="calculated" id="demandImpact">0%</td>
+                            <td id="demandFeas">-</td>
+                        </tr>
+                        <tr>
+                            <td>Required Takt Time</td>
+                            <td>72.0 sec</td>
+                            <td class="calculated" id="scenTakt">72.0</td>
+                            <td class="calculated" id="taktImpact">0%</td>
+                            <td id="taktFeas">-</td>
+                        </tr>
+                        <tr>
+                            <td>Bottleneck Station Requirement</td>
+                            <td>2</td>
+                            <td class="calculated" id="scenBottleneck">2</td>
+                            <td class="calculated" id="bottleImpact">0</td>
+                            <td id="bottleFeas">-</td>
+                        </tr>
+                        <tr>
+                            <td>Total Labor Required</td>
+                            <td>12</td>
+                            <td class="calculated" id="scenLabor">12</td>
+                            <td class="calculated" id="laborImpact">0</td>
+                            <td id="laborFeas">-</td>
+                        </tr>
+                        <tr>
+                            <td>Annual Operating Cost</td>
+                            <td>$900,000</td>
+                            <td class="calculated" id="scenCost">$900,000</td>
+                            <td class="calculated" id="costImpact">0%</td>
+                            <td id="costFeas">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">Demand Sensitivity Analysis</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Demand Level</th>
+                            <th>Annual Units</th>
+                            <th>Assembly Stations Needed</th>
+                            <th>Total Stations</th>
+                            <th>Capacity Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>-20%</td>
+                            <td>64,000</td>
+                            <td>1</td>
+                            <td>4</td>
+                            <td class="success">Under Capacity</td>
+                        </tr>
+                        <tr>
+                            <td>-10%</td>
+                            <td>72,000</td>
+                            <td>1</td>
+                            <td>4</td>
+                            <td class="success">Optimal</td>
+                        </tr>
+                        <tr>
+                            <td>Current</td>
+                            <td>80,000</td>
+                            <td>2</td>
+                            <td>5</td>
+                            <td class="warning">Requires Investment</td>
+                        </tr>
+                        <tr>
+                            <td>+10%</td>
+                            <td>88,000</td>
+                            <td>2</td>
+                            <td>5</td>
+                            <td class="warning">Near Capacity</td>
+                        </tr>
+                        <tr>
+                            <td>+20%</td>
+                            <td>96,000</td>
+                            <td>2</td>
+                            <td>5</td>
+                            <td class="error">Over Capacity - Welding Risk</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Visual Dashboard Section -->
+            <div id="visual" class="section">
+                <h2 class="section-title">Key Performance Indicators</h2>
+                <div style="text-align: center;">
+                    <div class="metric-card">
+                        <div class="metric-label">Daily Demand Gap</div>
+                        <div class="metric-value">+26</div>
+                        <div class="metric-label" style="font-size: 11px;">units over agreed</div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="metric-label">Critical Processes</div>
+                        <div class="metric-value">2</div>
+                        <div class="metric-label" style="font-size: 11px;">Assembly & Welding</div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="metric-label">Required Takt</div>
+                        <div class="metric-value">66.5 sec</div>
+                        <div class="metric-label" style="font-size: 11px;">vs 72 sec agreed</div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <div class="metric-label">Demand Variance</div>
+                        <div class="metric-value">+8.1%</div>
+                        <div class="metric-label" style="font-size: 11px;">above contract</div>
+                    </div>
+                </div>
+                
+                <h2 class="section-title">Process Utilization: Agreed vs Actual Demand</h2>
+                <div class="chart-container">
+                    <div style="margin: 15px 0;">
+                        <div style="font-weight: 600; margin-bottom: 10px;">Cutting</div>
+                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <div style="width: 80px; font-size: 12px;">Agreed:</div>
+                            <div class="bar" style="width: 43%; background: #27ae60; height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">43%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 80px; font-size: 12px;">Actual:</div>
+                            <div class="bar" style="width: 47%; background: #27ae60; height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">47%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <div style="font-weight: 600; margin-bottom: 10px;">Welding</div>
+                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <div style="width: 80px; font-size: 12px;">Agreed:</div>
+                            <div class="bar" style="width: 89%; background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%); height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">89% (Risk)</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 80px; font-size: 12px;">Actual:</div>
+                            <div class="bar" style="width: 97%; background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%); height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">97% (CRITICAL)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <div style="font-weight: 600; margin-bottom: 10px;">Bending</div>
+                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <div style="width: 80px; font-size: 12px;">Agreed:</div>
+                            <div class="bar" style="width: 63%; background: #27ae60; height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">63%</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 80px; font-size: 12px;">Actual:</div>
+                            <div class="bar" style="width: 69%; background: #27ae60; height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">69%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <div style="font-weight: 600; margin-bottom: 10px;">Assembly</div>
+                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <div style="width: 80px; font-size: 12px;">Agreed:</div>
+                            <div class="bar" style="width: 100%; background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%); height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">130% (BOTTLENECK)</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 80px; font-size: 12px;">Actual:</div>
+                            <div class="bar" style="width: 100%; background: linear-gradient(90deg, #8b0000 0%, #660000 100%); height: 25px;">
+                                <span class="bar-label" style="font-size: 12px;">142% (SEVERE)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h2 class="section-title">Daily Demand by Product: Agreed vs Actual</h2>
+                <div class="chart-container">
+                    <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                        <div style="text-align: center; margin: 10px;">
+                            <h4>Product A</h4>
+                            <div style="display: flex; align-items: flex-end; justify-content: center; height: 150px;">
+                                <div style="width: 40px; background: #3498db; margin: 0 5px; height: 40px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">40</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Agreed</span>
+                                </div>
+                                <div style="width: 40px; background: #2ecc71; margin: 0 5px; height: 40px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">40</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Actual</span>
+                                </div>
+                            </div>
+                            <p style="margin-top: 30px; color: #27ae60; font-weight: 600;">On Target</p>
+                        </div>
+                        <div style="text-align: center; margin: 10px;">
+                            <h4>Product B</h4>
+                            <div style="display: flex; align-items: flex-end; justify-content: center; height: 150px;">
+                                <div style="width: 40px; background: #3498db; margin: 0 5px; height: 80px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">80</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Agreed</span>
+                                </div>
+                                <div style="width: 40px; background: #f39c12; margin: 0 5px; height: 90px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">90</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Actual</span>
+                                </div>
+                            </div>
+                            <p style="margin-top: 30px; color: #f39c12; font-weight: 600;">+12.5%</p>
+                        </div>
+                        <div style="text-align: center; margin: 10px;">
+                            <h4>Product C</h4>
+                            <div style="display: flex; align-items: flex-end; justify-content: center; height: 150px;">
+                                <div style="width: 40px; background: #3498db; margin: 0 5px; height: 120px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">120</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Agreed</span>
+                                </div>
+                                <div style="width: 40px; background: #2ecc71; margin: 0 5px; height: 120px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">120</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Actual</span>
+                                </div>
+                            </div>
+                            <p style="margin-top: 30px; color: #27ae60; font-weight: 600;">On Target</p>
+                        </div>
+                        <div style="text-align: center; margin: 10px;">
+                            <h4>Product D</h4>
+                            <div style="display: flex; align-items: flex-end; justify-content: center; height: 150px;">
+                                <div style="width: 40px; background: #3498db; margin: 0 5px; height: 80px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">80</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Agreed</span>
+                                </div>
+                                <div style="width: 40px; background: #e74c3c; margin: 0 5px; height: 96px; position: relative;">
+                                    <span style="position: absolute; top: -20px; width: 100%; text-align: center; font-size: 12px;">96</span>
+                                    <span style="position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 11px;">Actual</span>
+                                </div>
+                            </div>
+                            <p style="margin-top: 30px; color: #e74c3c; font-weight: 600;">+20%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Items Section -->
+            <div id="actions" class="section">
+                <h2 class="section-title">Priority Action Items (Based on Actual Customer Demand)</h2>
+                
+                <div class="action-item priority-high">
+                    <h3>🔴 Priority 1: Address Demand-Capacity Mismatch</h3>
+                    <p><strong>Issue:</strong> Customer requesting 346 units/day vs 320 agreed (+8.1%)</p>
+                    <p><strong>Actions:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Immediate: Meet with customer to discuss actual vs agreed demand</li>
+                        <li>Option A: Negotiate return to agreed levels (especially Products B & D)</li>
+                        <li>Option B: Formal contract amendment with price adjustment</li>
+                        <li>Option C: Accept demand but implement surcharge for over-contract volume</li>
+                    </ul>
+                    <p><strong>Timeline:</strong> This week</p>
+                    <p><strong>Impact:</strong> Determines all other capacity decisions</p>
+                </div>
+                
+                <div class="action-item priority-high">
+                    <h3>🔴 Priority 2: Add Second Assembly Station</h3>
+                    <p><strong>Issue:</strong> Assembly at 142% capacity with actual demand (was 130% with agreed)</p>
+                    <p><strong>Action:</strong> Immediately approve and fast-track second assembly station</p>
+                    <p><strong>Timeline:</strong> 4-6 weeks (expedited)</p>
+                    <p><strong>Investment:</strong> $140,000</p>
+                    <p><strong>Expected ROI:</strong> Payback in <1 month if demand sustained</p>
+                </div>
+                
+                <div class="action-item priority-high">
+                    <h3>🔴 Priority 3: Welding Capacity Crisis</h3>
+                    <p><strong>Issue:</strong> Welding now at 97% utilization - NO BUFFER for breakdowns</p>
+                    <p><strong>Immediate Actions (This Week):</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Authorize overtime immediately (add 2 hours/day)</li>
+                        <li>Schedule preventive maintenance this weekend</li>
+                        <li>Begin cross-training backup operators</li>
+                    </ul>
+                    <p><strong>Medium-term (2-4 weeks):</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Implement quick changeover (SMED) to gain 10% capacity</li>
+                        <li>Evaluate adding second shift for welding only</li>
+                        <li>Start procurement for backup welding station</li>
+                    </ul>
+                    <p><strong>Investment:</strong> $25,000 immediate, $150,000 for new station</p>
+                </div>
+                
+                <div class="action-item priority-medium">
+                    <h3>🟡 Priority 4: Product Mix Optimization</h3>
+                    <p><strong>Issue:</strong> Products B & D significantly over agreed levels</p>
+                    <p><strong>Analysis:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Product B: 90 vs 80 daily (+12.5%) - High welding content</li>
+                        <li>Product D: 96 vs 80 daily (+20%) - Moderate complexity</li>
+                    </ul>
+                    <p><strong>Actions:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Review profitability - are these products worth the strain?</li>
+                        <li>Consider price increases for over-contract volumes</li>
+                        <li>Explore batching strategies to reduce changeovers</li>
+                    </ul>
+                    <p><strong>Timeline:</strong> 2-3 weeks</p>
+                </div>
+                
+                <div class="action-item priority-medium">
+                    <h3>🟡 Priority 5: Contingency Planning</h3>
+                    <p><strong>Issue:</strong> Operating with minimal buffers across multiple processes</p>
+                    <p><strong>Risk Mitigation Plan:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Maintain 2-day finished goods buffer for each product</li>
+                        <li>Establish overflow agreement with subcontractor</li>
+                        <li>Create "war room" daily meeting at 7 AM to review capacity</li>
+                        <li>Install real-time production monitoring system</li>
+                    </ul>
+                    <p><strong>Investment:</strong> $40,000 for monitoring system</p>
+                    <p><strong>Timeline:</strong> Implement over 4 weeks</p>
+                </div>
+                
+                <h2 class="section-title">Recommended Communication Plan</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Stakeholder</th>
+                            <th>Message</th>
+                            <th>Action Required</th>
+                            <th>Timeline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Customer</strong></td>
+                            <td>Current demand exceeds contract terms</td>
+                            <td>Meeting to align on volumes & pricing</td>
+                            <td>This week</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Executive Team</strong></td>
+                            <td>Capacity crisis requires immediate investment</td>
+                            <td>Approve $315,000 capital expenditure</td>
+                            <td>Today</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Production Team</strong></td>
+                            <td>Overtime required, new equipment coming</td>
+                            <td>Prepare for extended hours & training</td>
+                            <td>Tomorrow</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Procurement</strong></td>
+                            <td>Expedite equipment orders</td>
+                            <td>Fast-track assembly & welding equipment</td>
+                            <td>Today</td>
+                        </tr>
+                        <tr>
+                            <td><strong>HR Department</strong></td>
+                            <td>Need 4 additional operators</td>
+                            <td>Begin recruitment immediately</td>
+                            <td>This week</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Quality Team</strong></td>
+                            <td>Risk of quality issues due to capacity strain</td>
+                            <td>Increase inspection frequency</td>
+                            <td>Immediately</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">Decision Matrix</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Investment Required</th>
+                            <th>Time to Implement</th>
+                            <th>Risk Level</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Maintain current demand (346/day)</td>
+                            <td>$315,000</td>
+                            <td>6-8 weeks</td>
+                            <td class="error">Very High</td>
+                            <td>Requires all investments</td>
+                        </tr>
+                        <tr>
+                            <td>Return to agreed demand (320/day)</td>
+                            <td>$140,000</td>
+                            <td>4-6 weeks</td>
+                            <td class="warning">Medium</td>
+                            <td>Assembly station only</td>
+                        </tr>
+                        <tr>
+                            <td>Reduce to 300/day temporarily</td>
+                            <td>$0</td>
+                            <td>Immediate</td>
+                            <td class="success">Low</td>
+                            <td>Breathing room for improvements</td>
+                        </tr>
+                        <tr>
+                            <td>Add second shift</td>
+                            <td>$450,000/year</td>
+                            <td>2-3 weeks</td>
+                            <td class="warning">Medium</td>
+                            <td>Higher operating cost</td>
+                        </tr>
+                        <tr>
+                            <td>Outsource overflow</td>
+                            <td>Variable (15% margin hit)</td>
+                            <td>1-2 weeks</td>
+                            <td class="warning">Medium</td>
+                            <td>Quality control concerns</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="button" onclick="window.print()">📄 Print Report</button>
+                    <button class="button" onclick="exportToExcel()">📊 Export to Excel</button>
+                    <button class="button" onclick="saveScenario()">💾 Save Scenario</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        function calculate() {
+            // Get input values
+            const shifts = parseFloat(document.getElementById('shifts').value) || 1;
+            const hours = parseFloat(document.getElementById('hours').value) || 8;
+            const days = parseFloat(document.getElementById('days').value) || 5;
+            const weeks = parseFloat(document.getElementById('weeks').value) || 50;
+            const oee = parseFloat(document.getElementById('oee').value) / 100 || 0.8;
+            const workingDaysPerYear = days * weeks;
+            const setupFreq = parseFloat(document.getElementById('setupFreq').value) || 4;
+            
+            // Get setup times and calculate total
+            const setupA = parseFloat(document.getElementById('setupA').value) || 0;
+            const setupB = parseFloat(document.getElementById('setupB').value) || 0;
+            const setupC = parseFloat(document.getElementById('setupC').value) || 0;
+            const setupD = parseFloat(document.getElementById('setupD').value) || 0;
+            const avgSetupTime = (setupA + setupB + setupC + setupD) / 4;
+            const totalSetupTimePerDay = avgSetupTime * setupFreq;
+            
+            // Update total setup time display
+            document.getElementById('totalSetupTime').textContent = totalSetupTimePerDay.toFixed(1);
+            document.getElementById('avgSetup').innerHTML = '<strong>' + avgSetupTime.toFixed(1) + '</strong>';
+            
+            // Get agreed annual demand from Table 1
+            const agreedTotalDemand = parseFloat(document.getElementById('agreedDemand').value) || 80000;
+            const agreedDailyDemand = agreedTotalDemand > 0 && workingDaysPerYear > 0 ? agreedTotalDemand / workingDaysPerYear : 0;
+            
+            // Get agreed product mix percentages from new inputs
+            const agreedMixA = parseFloat(document.getElementById('agreedMixA').value) / 100 || 0;
+            const agreedMixB = parseFloat(document.getElementById('agreedMixB').value) / 100 || 0;
+            const agreedMixC = parseFloat(document.getElementById('agreedMixC').value) / 100 || 0;
+            const agreedMixD = parseFloat(document.getElementById('agreedMixD').value) / 100 || 0;
+            
+            // Validate mix total
+            const mixTotal = (agreedMixA + agreedMixB + agreedMixC + agreedMixD) * 100;
+            document.getElementById('mixTotal').innerHTML = '<strong>' + mixTotal.toFixed(1) + '%</strong>';
+            document.getElementById('mixTotalCheck').textContent = mixTotal.toFixed(1) + '%';
+            
+            const mixCheckElement = document.getElementById('mixCheckStatus');
+            if (Math.abs(mixTotal - 100) < 0.1) {
+                mixCheckElement.textContent = '✓ Valid';
+                mixCheckElement.className = 'success';
+            } else {
+                mixCheckElement.textContent = '⚠ Must = 100%';
+                mixCheckElement.className = 'error';
+            }
+            
+            // Calculate agreed product breakdown based on input percentages
+            const agreedAnnualA = agreedTotalDemand * agreedMixA;
+            const agreedAnnualB = agreedTotalDemand * agreedMixB;
+            const agreedAnnualC = agreedTotalDemand * agreedMixC;
+            const agreedAnnualD = agreedTotalDemand * agreedMixD;
+            
+            const agreedDailyA = workingDaysPerYear > 0 ? agreedAnnualA / workingDaysPerYear : 0;
+            const agreedDailyB = workingDaysPerYear > 0 ? agreedAnnualB / workingDaysPerYear : 0;
+            const agreedDailyC = workingDaysPerYear > 0 ? agreedAnnualC / workingDaysPerYear : 0;
+            const agreedDailyD = workingDaysPerYear > 0 ? agreedAnnualD / workingDaysPerYear : 0;
+            
+            // Update agreed mix table displays
+            document.getElementById('agreedCalcAnnualA').textContent = Math.round(agreedAnnualA).toLocaleString();
+            document.getElementById('agreedCalcAnnualB').textContent = Math.round(agreedAnnualB).toLocaleString();
+            document.getElementById('agreedCalcAnnualC').textContent = Math.round(agreedAnnualC).toLocaleString();
+            document.getElementById('agreedCalcAnnualD').textContent = Math.round(agreedAnnualD).toLocaleString();
+            
+            document.getElementById('agreedCalcDailyA').textContent = Math.round(agreedDailyA);
+            document.getElementById('agreedCalcDailyB').textContent = Math.round(agreedDailyB);
+            document.getElementById('agreedCalcDailyC').textContent = Math.round(agreedDailyC);
+            document.getElementById('agreedCalcDailyD').textContent = Math.round(agreedDailyD);
+            
+            document.getElementById('agreedTotalAnnual').innerHTML = '<strong>' + agreedTotalDemand.toLocaleString() + '</strong>';
+            document.getElementById('agreedTotalDaily').innerHTML = '<strong>' + Math.round(agreedDailyDemand) + '</strong>';
+            
+            // Get actual daily demands from customer
+            const dailyA = parseFloat(document.getElementById('dailyA').value) || 0;
+            const dailyB = parseFloat(document.getElementById('dailyB').value) || 0;
+            const dailyC = parseFloat(document.getElementById('dailyC').value) || 0;
+            const dailyD = parseFloat(document.getElementById('dailyD').value) || 0;
+            
+            const totalDailyActual = dailyA + dailyB + dailyC + dailyD;
+            const totalWeeklyActual = totalDailyActual * days;
+            const totalAnnualActual = totalDailyActual * workingDaysPerYear;
+            
+            // Calculate takt time based on AGREED demand with setup losses
+            const totalSeconds = shifts * hours * days * weeks * 3600;
+            const setupLossSeconds = totalSetupTimePerDay * 60 * workingDaysPerYear;
+            const netSeconds = totalSeconds - setupLossSeconds;
+            const effectiveSeconds = netSeconds * oee;
+            const taktTime = agreedTotalDemand > 0 ? effectiveSeconds / agreedTotalDemand : 0;
+            
+            // Calculate actual required takt time based on ACTUAL demand
+            const actualRequiredTakt = totalAnnualActual > 0 ? effectiveSeconds / totalAnnualActual : 0;
+            
+            // Update Table 2 - Takt Time display
+            document.getElementById('totalDemand').textContent = agreedTotalDemand.toLocaleString();
+            document.getElementById('agreedDaily').textContent = agreedDailyDemand.toFixed(0);
+            document.getElementById('totalSeconds').textContent = totalSeconds.toLocaleString();
+            document.getElementById('setupLoss').textContent = setupLossSeconds.toLocaleString();
+            document.getElementById('netSeconds').textContent = netSeconds.toLocaleString();
+            document.getElementById('effectiveSeconds').textContent = effectiveSeconds.toLocaleString();
+            document.getElementById('taktTime').textContent = taktTime.toFixed(1);
+            
+            // Update Table 3 - Actual vs Agreed Demand
+            // Product A
+            document.getElementById('weeklyA').textContent = (dailyA * days).toFixed(0);
+            document.getElementById('annualA').textContent = (dailyA * workingDaysPerYear).toLocaleString();
+            document.getElementById('mixA').textContent = (totalDailyActual > 0 ? (dailyA / totalDailyActual) * 100 : 0).toFixed(1) + '%';
+            document.getElementById('agreedDailyA').textContent = agreedDailyA.toFixed(0);
+            document.getElementById('agreedAnnualA').textContent = agreedAnnualA.toLocaleString();
+            const varA = agreedDailyA > 0 ? ((dailyA - agreedDailyA) / agreedDailyA * 100) : 0;
+            document.getElementById('varA').textContent = (varA > 0 ? '+' : '') + varA.toFixed(1) + '%';
+            updateDemandStatus('A', varA);
+            
+            // Product B
+            document.getElementById('weeklyB').textContent = (dailyB * days).toFixed(0);
+            document.getElementById('annualB').textContent = (dailyB * workingDaysPerYear).toLocaleString();
+            document.getElementById('mixB').textContent = (totalDailyActual > 0 ? (dailyB / totalDailyActual) * 100 : 0).toFixed(1) + '%';
+            document.getElementById('agreedDailyB').textContent = agreedDailyB.toFixed(0);
+            document.getElementById('agreedAnnualB').textContent = agreedAnnualB.toLocaleString();
+            const varB = agreedDailyB > 0 ? ((dailyB - agreedDailyB) / agreedDailyB * 100) : 0;
+            document.getElementById('varB').textContent = (varB > 0 ? '+' : '') + varB.toFixed(1) + '%';
+            updateDemandStatus('B', varB);
+            
+            // Product C
+            document.getElementById('weeklyC').textContent = (dailyC * days).toFixed(0);
+            document.getElementById('annualC').textContent = (dailyC * workingDaysPerYear).toLocaleString();
+            document.getElementById('mixC').textContent = (totalDailyActual > 0 ? (dailyC / totalDailyActual) * 100 : 0).toFixed(1) + '%';
+            document.getElementById('agreedDailyC').textContent = agreedDailyC.toFixed(0);
+            document.getElementById('agreedAnnualC').textContent = agreedAnnualC.toLocaleString();
+            const varC = agreedDailyC > 0 ? ((dailyC - agreedDailyC) / agreedDailyC * 100) : 0;
+            document.getElementById('varC').textContent = (varC > 0 ? '+' : '') + varC.toFixed(1) + '%';
+            updateDemandStatus('C', varC);
+            
+            // Product D
+            document.getElementById('weeklyD').textContent = (dailyD * days).toFixed(0);
+            document.getElementById('annualD').textContent = (dailyD * workingDaysPerYear).toLocaleString();
+            document.getElementById('mixD').textContent = (totalDailyActual > 0 ? (dailyD / totalDailyActual) * 100 : 0).toFixed(1) + '%';
+            document.getElementById('agreedDailyD').textContent = agreedDailyD.toFixed(0);
+            document.getElementById('agreedAnnualD').textContent = agreedAnnualD.toLocaleString();
+            const varD = agreedDailyD > 0 ? ((dailyD - agreedDailyD) / agreedDailyD * 100) : 0;
+            document.getElementById('varD').textContent = (varD > 0 ? '+' : '') + varD.toFixed(1) + '%';
+            updateDemandStatus('D', varD);
+            
+            // Update totals
+            document.getElementById('totalDaily').innerHTML = '<strong>' + totalDailyActual.toFixed(0) + '</strong>';
+            document.getElementById('totalWeekly').innerHTML = '<strong>' + totalWeeklyActual.toFixed(0) + '</strong>';
+            document.getElementById('totalAnnual').innerHTML = '<strong>' + totalAnnualActual.toLocaleString() + '</strong>';
+            document.getElementById('totalAgreedDaily').innerHTML = '<strong>' + agreedDailyDemand.toFixed(0) + '</strong>';
+            const totalVar = agreedDailyDemand > 0 ? ((totalDailyActual - agreedDailyDemand) / agreedDailyDemand * 100) : 0;
+            document.getElementById('totalVar').innerHTML = '<strong>' + (totalVar > 0 ? '+' : '') + totalVar.toFixed(1) + '%</strong>';
+            updateTotalDemandStatus(totalVar);
+            
+            // Get station counts from Table 4
+            const stationsCut = parseFloat(document.getElementById('stationsCut').value) || 1;
+            const stationsWeld = parseFloat(document.getElementById('stationsWeld').value) || 1;
+            const stationsBend = parseFloat(document.getElementById('stationsBend').value) || 1;
+            const stationsAssy = parseFloat(document.getElementById('stationsAssy').value) || 1;
+
+            // Get base cycle times from new inputs in Table 3a
+            const base_cutA = parseFloat(document.getElementById('baseCutA').value) || 0;
+            const base_cutB = parseFloat(document.getElementById('baseCutB').value) || 0;
+            const base_cutC = parseFloat(document.getElementById('baseCutC').value) || 0;
+            const base_cutD = parseFloat(document.getElementById('baseCutD').value) || 0;
+            
+            const base_weldA = parseFloat(document.getElementById('baseWeldA').value) || 0;
+            const base_weldB = parseFloat(document.getElementById('baseWeldB').value) || 0;
+            const base_weldC = parseFloat(document.getElementById('baseWeldC').value) || 0;
+            const base_weldD = parseFloat(document.getElementById('baseWeldD').value) || 0;
+            
+            const base_bendA = parseFloat(document.getElementById('baseBendA').value) || 0;
+            const base_bendB = parseFloat(document.getElementById('baseBendB').value) || 0;
+            const base_bendC = parseFloat(document.getElementById('baseBendC').value) || 0;
+            const base_bendD = parseFloat(document.getElementById('baseBendD').value) || 0;
+            
+            const base_assyA = parseFloat(document.getElementById('baseAssyA').value) || 0;
+            const base_assyB = parseFloat(document.getElementById('baseAssyB').value) || 0;
+            const base_assyC = parseFloat(document.getElementById('baseAssyC').value) || 0;
+            const base_assyD = parseFloat(document.getElementById('baseAssyD').value) || 0;
+            
+            // Calculate effective cycle times by dividing base cycle time by number of stations
+            const effective_cutA = base_cutA / stationsCut;
+            const effective_weldA = base_weldA / stationsWeld;
+            const effective_bendA = base_bendA / stationsBend;
+            const effective_assyA = base_assyA / stationsAssy;
+
+            const effective_cutB = base_cutB / stationsCut;
+            const effective_weldB = base_weldB / stationsWeld;
+            const effective_bendB = base_bendB / stationsBend;
+            const effective_assyB = base_assyB / stationsAssy;
+
+            const effective_cutC = base_cutC / stationsCut;
+            const effective_weldC = base_weldC / stationsWeld;
+            const effective_bendC = base_bendC / stationsBend;
+            const effective_assyC = base_assyC / stationsAssy;
+
+            const effective_cutD = base_cutD / stationsCut;
+            const effective_weldD = base_weldD / stationsWeld;
+            const effective_bendD = base_bendD / stationsBend;
+            const effective_assyD = base_assyD / stationsAssy;
+
+            // Update the effective time display cells in Table 3b
+            document.getElementById('effCutA_display').textContent = effective_cutA.toFixed(1);
+            document.getElementById('effWeldA_display').textContent = effective_weldA.toFixed(1);
+            document.getElementById('effBendA_display').textContent = effective_bendA.toFixed(1);
+            document.getElementById('effAssyA_display').textContent = effective_assyA.toFixed(1);
+
+            document.getElementById('effCutB_display').textContent = effective_cutB.toFixed(1);
+            document.getElementById('effWeldB_display').textContent = effective_weldB.toFixed(1);
+            document.getElementById('effBendB_display').textContent = effective_bendB.toFixed(1);
+            document.getElementById('effAssyB_display').textContent = effective_assyB.toFixed(1);
+
+            document.getElementById('effCutC_display').textContent = effective_cutC.toFixed(1);
+            document.getElementById('effWeldC_display').textContent = effective_weldC.toFixed(1);
+            document.getElementById('effBendC_display').textContent = effective_bendC.toFixed(1);
+            document.getElementById('effAssyC_display').textContent = effective_assyC.toFixed(1);
+
+            document.getElementById('effCutD_display').textContent = effective_cutD.toFixed(1);
+            document.getElementById('effWeldD_display').textContent = effective_weldD.toFixed(1);
+            document.getElementById('effBendD_display').textContent = effective_bendD.toFixed(1);
+            document.getElementById('effAssyD_display').textContent = effective_assyD.toFixed(1);
+            
+            // Calculate bottleneck cycle times using EFFECTIVE times
+            const bottleneckA_time = updateBottleneckInfo('A', effective_cutA, effective_weldA, effective_bendA, effective_assyA);
+            const bottleneckB_time = updateBottleneckInfo('B', effective_cutB, effective_weldB, effective_bendB, effective_assyB);
+            const bottleneckC_time = updateBottleneckInfo('C', effective_cutC, effective_weldC, effective_bendC, effective_assyC);
+            const bottleneckD_time = updateBottleneckInfo('D', effective_cutD, effective_weldD, effective_bendD, effective_assyD);
+            
+            // Update required takt times
+            document.getElementById('reqTaktA').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('reqTaktB').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('reqTaktC').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('reqTaktD').textContent = actualRequiredTakt.toFixed(1);
+            
+            // Update takt gap status
+            updateTaktGapStatus('A', bottleneckA_time, actualRequiredTakt);
+            updateTaktGapStatus('B', bottleneckB_time, actualRequiredTakt);
+            updateTaktGapStatus('C', bottleneckC_time, actualRequiredTakt);
+            updateTaktGapStatus('D', bottleneckD_time, actualRequiredTakt);
+            
+            // Calculate WACT based on ACTUAL demand mix and BASE (single station) cycle times
+            const mixA = totalDailyActual > 0 ? dailyA / totalDailyActual : 0;
+            const mixB = totalDailyActual > 0 ? dailyB / totalDailyActual : 0;
+            const mixC = totalDailyActual > 0 ? dailyC / totalDailyActual : 0;
+            const mixD = totalDailyActual > 0 ? dailyD / totalDailyActual : 0;
+            
+            const wactCut = base_cutA * mixA + base_cutB * mixB + base_cutC * mixC + base_cutD * mixD;
+            const wactWeld = base_weldA * mixA + base_weldB * mixB + base_weldC * mixC + base_weldD * mixD;
+            const wactBend = base_bendA * mixA + base_bendB * mixB + base_bendC * mixC + base_bendD * mixD;
+            const wactAssy = base_assyA * mixA + base_assyB * mixB + base_assyC * mixC + base_assyD * mixD;
+
+            // Calculate effective WACT which considers the number of stations
+            const effectiveWactCut = wactCut / stationsCut;
+            const effectiveWactWeld = wactWeld / stationsWeld;
+            const effectiveWactBend = wactBend / stationsBend;
+            const effectiveWactAssy = wactAssy / stationsAssy;
+            
+            // Update WACT display in Table 4 to show the EFFECTIVE WACT.
+            document.getElementById('wactCut').textContent = effectiveWactCut.toFixed(1);
+            document.getElementById('wactWeld').textContent = effectiveWactWeld.toFixed(1);
+            document.getElementById('wactBend').textContent = effectiveWactBend.toFixed(1);
+            document.getElementById('wactAssy').textContent = effectiveWactAssy.toFixed(1);
+            
+            // Use actual required takt for capacity analysis
+            document.getElementById('taktCut').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('taktWeld').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('taktBend').textContent = actualRequiredTakt.toFixed(1);
+            document.getElementById('taktAssy').textContent = actualRequiredTakt.toFixed(1);
+            
+            // Display agreed takt time for comparison
+            document.getElementById('agreedTaktCut').textContent = taktTime.toFixed(1);
+            document.getElementById('agreedTaktWeld').textContent = taktTime.toFixed(1);
+            document.getElementById('agreedTaktBend').textContent = taktTime.toFixed(1);
+            document.getElementById('agreedTaktAssy').textContent = taktTime.toFixed(1);
+            
+            // Calculate and display demand status
+            updateDemandStatusForProcess('Cut', taktTime, actualRequiredTakt);
+            updateDemandStatusForProcess('Weld', taktTime, actualRequiredTakt);
+            updateDemandStatusForProcess('Bend', taktTime, actualRequiredTakt);
+            updateDemandStatusForProcess('Assy', taktTime, actualRequiredTakt);
+            
+            // Calculate utilization and requirements based on ACTUAL demand, using the BASE WACT. The formula inside updateProcessAnalysis already accounts for stations.
+            updateProcessAnalysis('Cut', wactCut, actualRequiredTakt);
+            updateProcessAnalysis('Weld', wactWeld, actualRequiredTakt);
+            updateProcessAnalysis('Bend', wactBend, actualRequiredTakt);
+            updateProcessAnalysis('Assy', wactAssy, actualRequiredTakt);
+        }
+        
+        function updateDemandStatusForProcess(process, agreedTakt, requiredTakt) {
+            const statusElement = document.getElementById('demandStatus' + process);
+            const percentDiff = requiredTakt > 0 ? ((agreedTakt - requiredTakt) / agreedTakt * 100) : 0;
+            
+            if (Math.abs(percentDiff) < 2) {
+                statusElement.textContent = 'On Target';
+                statusElement.className = 'success';
+            } else if (percentDiff > 0) {
+                // Required takt is lower than agreed (demand is higher)
+                statusElement.textContent = 'Over +' + percentDiff.toFixed(0) + '%';
+                if (percentDiff > 10) {
+                    statusElement.className = 'error';
+                } else {
+                    statusElement.className = 'warning';
+                }
+            } else {
+                // Required takt is higher than agreed (demand is lower)
+                statusElement.textContent = 'Under ' + percentDiff.toFixed(0) + '%';
+                statusElement.className = 'success';
+            }
+        }
+        
+        function updateBottleneckInfo(product, cut, weld, bend, assy) {
+            const processes = {
+                'Cutting': cut,
+                'Welding': weld,
+                'Bending': bend,
+                'Assembly': assy
+            };
+            
+            let maxTime = 0;
+            let bottleneckProcess = '';
+            
+            for (const [process, time] of Object.entries(processes)) {
+                if (time > maxTime) {
+                    maxTime = time;
+                    bottleneckProcess = process;
+                }
+            }
+            
+            document.getElementById('bottleneck' + product).textContent = maxTime.toFixed(1);
+            document.getElementById('bottleProcess' + product).textContent = bottleneckProcess;
+            return maxTime;
+        }
+        
+        function updateTaktGapStatus(product, bottleneckTime, requiredTakt) {
+            const gapElement = document.getElementById('taktGap' + product);
+            const gap = bottleneckTime - requiredTakt;
+            
+            if (gap > 10) {
+                gapElement.textContent = 'OVER';
+                gapElement.className = 'error';
+            } else if (gap > 0) {
+                gapElement.textContent = 'TIGHT';
+                gapElement.className = 'warning';
+            } else {
+                gapElement.textContent = 'OK';
+                gapElement.className = 'success';
+            }
+        }
+        
+        function updateDemandStatus(product, variance) {
+            const varElement = document.getElementById('var' + product);
+            const statusElement = document.getElementById('status' + product);
+            
+            if (Math.abs(variance) <= 5) {
+                varElement.className = 'calculated';
+                statusElement.className = 'success';
+                statusElement.textContent = 'On Target';
+            } else if (variance > 5) {
+                varElement.className = 'warning';
+                statusElement.className = 'warning';
+                statusElement.textContent = 'Over Demand';
+            } else {
+                varElement.className = 'error';
+                statusElement.className = 'error';
+                statusElement.textContent = 'Under Demand';
+            }
+        }
+        
+        function updateTotalDemandStatus(variance) {
+            const varElement = document.getElementById('totalVar');
+            const statusElement = document.getElementById('totalStatus');
+            
+            if (Math.abs(variance) <= 5) {
+                varElement.className = 'calculated';
+                statusElement.className = 'success';
+                statusElement.innerHTML = '<strong>Within Tolerance</strong>';
+            } else if (variance > 5) {
+                varElement.className = 'warning';
+                statusElement.className = 'warning';
+                statusElement.innerHTML = '<strong>Over Capacity</strong>';
+            } else {
+                varElement.className = 'error';
+                statusElement.className = 'error';
+                statusElement.innerHTML = '<strong>Under Utilized</strong>';
+            }
+        }
+        
+        function updateProcessAnalysis(process, wact, taktTime) {
+            const stations = parseFloat(document.getElementById('stations' + process).value) || 1;
+            const utilization = taktTime > 0 ? (wact / (taktTime * stations)) * 100 : 0;
+            const required = taktTime > 0 ? Math.ceil(wact / taktTime) : 1;
+            const finalUtil = (taktTime > 0 && required > 0) ? (wact / (taktTime * required)) * 100 : 0;
+            
+            document.getElementById('util' + process).textContent = utilization.toFixed(0) + '%';
+            document.getElementById('req' + process).textContent = required;
+            document.getElementById('finalUtil' + process).textContent = finalUtil.toFixed(0) + '%';
+            
+            // Update status with more granular thresholds
+            const statusElement = document.getElementById('status' + process);
+            const targetUtil = parseFloat(document.getElementById('targetUtil').value) || 85;
+            
+            if (utilization > 150) {
+                statusElement.textContent = 'SEVERE BOTTLENECK';
+                statusElement.className = 'error';
+            } else if (utilization > 100) {
+                statusElement.textContent = 'BOTTLENECK';
+                statusElement.className = 'error';
+            } else if (utilization > 95) {
+                statusElement.textContent = 'CRITICAL';
+                statusElement.className = 'error';
+            } else if (utilization > targetUtil) {
+                statusElement.textContent = 'OK (Risk)';
+                statusElement.className = 'warning';
+            } else {
+                statusElement.textContent = 'OK';
+                statusElement.className = 'success';
+            }
+        }
+        
+        function updateScenario() {
+            const demandVar = parseFloat(document.getElementById('demandVar').value);
+            const oeeImprove = parseFloat(document.getElementById('oeeImprove').value);
+            const shiftPattern = parseFloat(document.getElementById('shiftPattern').value);
+            
+            document.getElementById('demandVarValue').textContent = demandVar + '%';
+            document.getElementById('oeeImproveValue').textContent = oeeImprove + '%';
+            
+            // Update scenario calculations
+            const baseDemand = 80000;
+            const scenDemand = baseDemand * (1 + demandVar / 100);
+            document.getElementById('scenDemand').textContent = Math.round(scenDemand).toLocaleString();
+            document.getElementById('demandImpact').textContent = demandVar + '%';
+            
+            // Add more scenario calculations here
+        }
+        
+        function exportToExcel() {
+            alert('Export functionality would be implemented here. This would generate an Excel file with all the data and calculations.');
+        }
+        
+        function saveScenario() {
+            alert('Scenario saved! In a real implementation, this would save the current configuration for later retrieval.');
+        }
+        
+        // Initialize calculations on page load
+        window.onload = function() {
+            calculate();
+        };
+    </script>
+</body>
+</html>
+
