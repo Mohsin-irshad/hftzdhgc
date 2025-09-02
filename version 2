@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Operations Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #2c3e50;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            color: white;
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .tab.active {
+            background: #3498db;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52,152,219,0.3);
+        }
+        
+        .input-cell {
+            background: #fffbf0;
+        }
+
+        .input-cell-with-eff {
+            background: #fffbf0;
+            vertical-align: top;
+        }
+        .input-cell-with-eff input {
+            margin-bottom: 2px;
+        }
+
+        .effective-time-display {
+            font-size: 11px;
+            color: #555;
+            font-style: italic;
+            margin-top: 4px;
+        }
+        
+        .calculated {
+            background: #e8f5e9;
+            font-weight: 600;
+        }
+        
+        .warning {
+            background: #fff3e0;
+            color: #f57c00;
+            font-weight: 600;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            font-weight: 600;
+        }
+        
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .metric-card {
+            display: inline-block;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .bar {
+            height: 30px;
+            margin: 10px 0;
+            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-label {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .action-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .priority-high {
+            border-left-color: #e74c3c;
+            background: #ffebee;
+        }
+        
+        .priority-medium {
+            border-left-color: #f39c12;
+            background: #fff3e0;
+        }
+        
+        .priority-low {
+            border-left-color: #27ae60;
+            background: #e8f5e9;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .button.remove {
+            background: #e74c3c;
+        }
+        .button.remove:hover {
+            background: #c0392b;
+        }
+        
+        .scenario-controls, .config-controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        @media print {
+            .tabs, .button, .scenario-controls, .config-controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 Enhanced Operations Analyzer</h1>
+            <p>Comprehensive Capacity Planning & Optimization Tool</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab" onclick="showSection('config')">Configuration</button>
+            <button class="tab active" onclick="showSection('basic')">Basic Analysis</button>
+            <button class="tab" onclick="showSection('advanced')">Advanced Metrics</button>
+            <button class="tab" onclick="showSection('financial')">Financial Analysis</button>
+            <button class="tab" onclick="showSection('labor')">Labor Planning</button>
+            <button class="tab" onclick="showSection('scenario')">Scenario Planning</button>
+            <button class="tab" onclick="showSection('visual')">Visual Dashboard</button>
+            <button class="tab" onclick="showSection('actions')">Action Items</button>
+        </div>
+        
+        <div class="content">
+            <!-- Configuration Section -->
+            <div id="config" class="section">
+                <h2 class="section-title">⚙️ App Configuration</h2>
+                <div class="config-controls">
+                    <div class="control-group">
+                        <div class="control-label">Manage Products</div>
+                        <button class="button" onclick="addProduct()">Add Product</button>
+                        <button class="button remove" onclick="removeProduct()">Remove Last Product</button>
+                    </div>
+                     <div class="control-group">
+                        <div class="control-label">Manage Processes</div>
+                        <button class="button" onclick="addProcess()">Add Process</button>
+                        <button class="button remove" onclick="removeProcess()">Remove Last Process</button>
+                    </div>
+                </div>
+
+                 <div id="rename-section">
+                    <h2 class="section-title">Rename Items</h2>
+                    <div id="rename-buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- Basic Analysis Section -->
+            <div id="basic" class="section active">
+                <h2 class="section-title">1. Global Inputs & Agreed Annual Demand</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Shifts per Day</td>
+                            <td class="input-cell"><input type="number" id="shifts" value="1" onchange="calculate()"></td>
+                            <td>Number of production shifts</td>
+                        </tr>
+                        <tr>
+                            <td>Hours per Shift</td>
+                            <td class="input-cell"><input type="number" id="hours" value="8" onchange="calculate()"></td>
+                            <td>Productive hours per shift</td>
+                        </tr>
+                        <tr>
+                            <td>Days per Week</td>
+                            <td class="input-cell"><input type="number" id="days" value="5" onchange="calculate()"></td>
+                            <td>Working days</td>
+                        </tr>
+                        <tr>
+                            <td>Weeks per Year</td>
+                            <td class="input-cell"><input type="number" id="weeks" value="50" onchange="calculate()"></td>
+                            <td>Accounts for holidays/shutdowns</td>
+                        </tr>
+                        <tr>
+                            <td>OEE (%)</td>
+                            <td class="input-cell"><input type="number" id="oee" value="80" onchange="calculate()"></td>
+                            <td>Overall Equipment Effectiveness</td>
+                        </tr>
+                        <tr>
+                            <td>Target Utilization (%) - Non-Bottleneck</td>
+                            <td class="input-cell"><input type="number" id="targetUtil" value="85" onchange="calculate()"></td>
+                            <td>Max recommended utilization</td>
+                        </tr>
+                        <tr>
+                            <td>First Pass Yield (%)</td>
+                            <td class="input-cell"><input type="number" id="fpy" value="95" onchange="calculate()"></td>
+                            <td>Quality metric</td>
+                        </tr>
+                        <tr style="background: #fff3e0;">
+                            <td><strong>Setup Frequency (setups/day)</strong></td>
+                            <td class="input-cell"><input type="number" id="setupFreq" value="4" onchange="calculate()" style="font-weight: bold;"></td>
+                            <td><strong>Average changeovers per day</strong></td>
+                        </tr>
+                        <tr style="background: #fff3e0;">
+                            <td><strong>Total Setup Time (min/day)</strong></td>
+                            <td class="calculated" id="totalSetupTime" style="font-weight: bold;">78</td>
+                            <td><strong>Sum of all product setup times × frequency</strong></td>
+                        </tr>
+                        <tr style="background: #e3f2fd;">
+                            <td><strong>AGREED Total Annual Demand (Contract)</strong></td>
+                            <td class="input-cell"><input type="number" id="agreedDemand" value="80000" onchange="calculate()" style="font-weight: bold; background: #fff3e0;"></td>
+                            <td><strong>Baseline commitment to customer</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">1b. Agreed Product Mix (Contract Baseline)</h2>
+                <table id="agreedMixTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Agreed Mix %</th>
+                            <th>Agreed Annual Units</th>
+                            <th>Agreed Daily Units</th>
+                            <th>Check Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Rows Here -->
+                    </tbody>
+                     <tfoot>
+                        <tr style="background: #ecf0f1; font-weight: bold;">
+                            <td><strong>TOTAL</strong></td>
+                            <td class="calculated" id="mixTotal"><strong>100.0%</strong></td>
+                            <td class="calculated" id="agreedTotalAnnual"><strong>80,000</strong></td>
+                            <td class="calculated" id="agreedTotalDaily"><strong>320</strong></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <h2 class="section-title">2. Takt Time Calculation (Based on Agreed Demand)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Formula</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Agreed Annual Demand (from Table 1)</td>
+                            <td class="calculated" id="totalDemand">80,000</td>
+                            <td>Contract baseline</td>
+                        </tr>
+                        <tr>
+                            <td>Agreed Daily Demand</td>
+                            <td class="calculated" id="agreedDaily">320</td>
+                            <td>Annual ÷ Working Days</td>
+                        </tr>
+                        <tr>
+                            <td>Total Available Seconds/Year</td>
+                            <td class="calculated" id="totalSeconds">7,200,000</td>
+                            <td>Shifts × Hours × Days × Weeks × 3600</td>
+                        </tr>
+                        <tr>
+                            <td>Setup Loss Seconds/Year</td>
+                            <td class="warning" id="setupLoss">468,000</td>
+                            <td>Setup Time × Frequency × Working Days × 60</td>
+                        </tr>
+                        <tr>
+                            <td>Net Available Seconds (after setup)</td>
+                            <td class="calculated" id="netSeconds">6,732,000</td>
+                            <td>Total - Setup Loss</td>
+                        </tr>
+                        <tr>
+                            <td>Effective Production Seconds/Year</td>
+                            <td class="calculated" id="effectiveSeconds">5,385,600</td>
+                            <td>Net Seconds × OEE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AGREED TAKT TIME (seconds/piece)</strong></td>
+                            <td class="success" id="taktTime">67.3</td>
+                            <td>Effective Seconds ÷ Agreed Demand</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2 class="section-title">3. Product & Process Data (Actual Customer Demand vs Agreed)</h2>
+                <table id="actualDemandTable">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Product</th>
+                            <th colspan="4" style="text-align: center; background: #2c3e50;">Customer Demand (Post-SOP)</th>
+                            <th colspan="2" style="text-align: center; background: #16a085;">Agreed Baseline</th>
+                            <th rowspan="2">Variance %</th>
+                            <th rowspan="2">Status</th>
+                        </tr>
+                        <tr>
+                            <th style="background: #34495e;">Daily Actual</th>
+                            <th style="background: #34495e;">Weekly Actual</th>
+                            <th style="background: #34495e;">Annual Projection</th>
+                            <th style="background: #34495e;">Mix %</th>
+                            <th style="background: #1abc9c;">Daily Agreed</th>
+                            <th style="background: #1abc9c;">Annual Agreed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Rows Here -->
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #ecf0f1; font-weight: bold;">
+                            <td><strong>TOTAL</strong></td>
+                            <td class="calculated" id="totalDaily"><strong></strong></td>
+                            <td class="calculated" id="totalWeekly"><strong></strong></td>
+                            <td class="calculated" id="totalAnnual"><strong></strong></td>
+                            <td class="calculated"><strong>100%</strong></td>
+                            <td class="calculated" id="totalAgreedDaily"><strong></strong></td>
+                            <td class="calculated" id="totalAgreedAnnualDisplay"><strong></strong></td>
+                            <td class="warning" id="totalVar"><strong></strong></td>
+                            <td class="warning" id="totalStatus"><strong></strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <h2 class="section-title">3a. Base Process Cycle Times (at 1 Station) & Setup</h2>
+                <table id="baseCycleTimeTable">
+                    <!-- Dynamic Headers & Body Here -->
+                </table>
+
+                <h2 class="section-title">3b. Effective Cycle Times & Bottleneck Analysis</h2>
+                <table id="effectiveCycleTimeTable">
+                    <!-- Dynamic Headers & Body Here -->
+                </table>
+                
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #f57c00; margin: 0 0 10px 0;">⚠️ Demand Analysis Summary</h3>
+                    <p><strong>Customer actual demand vs contracted agreement:</strong></p>
+                    <ul id="demand-summary-list" style="margin: 10px 0; padding-left: 20px;">
+                        <!-- Dynamic Summary Here -->
+                    </ul>
+                </div>
+                
+                <h2 class="section-title">4. Capacity Analysis (Based on Actual Customer Demand)</h2>
+                <table id="capacityAnalysisTable">
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>WACT (sec)</th>
+                            <th>Agreed Takt</th>
+                            <th>Required Takt</th>
+                            <th>Demand Status</th>
+                            <th>Current Stations</th>
+                            <th>Utilization %</th>
+                            <th>Status</th>
+                            <th>Required Stations</th>
+                            <th>Final Util %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       <!-- Dynamic Rows Here -->
+                    </tbody>
+                </table>
+
+                <h2 class="section-title">4a. Capacity Utilization by Product (%)</h2>
+                <table id="capacityByProductTable">
+                    <!-- Dynamic Headers & Body Here -->
+                </table>
+                
+                <div style="background: #ffebee; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #c62828; margin: 0 0 10px 0;">🔴 Critical Capacity Issues with Setup Losses & Actual Demand</h3>
+                    <ul id="capacity-issues-list" style="margin: 10px 0; padding-left: 20px;">
+                        <!-- Dynamic Summary Here -->
+                    </ul>
+                </div>
+                
+                <h2 class="section-title">5. Impact Analysis: Agreed vs Actual Demand (With Setup Losses)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Agreed (No Setup)</th>
+                            <th>Agreed (With Setup)</th>
+                            <th>Actual (With Setup)</th>
+                            <th>Total Impact</th>
+                            <th>Action Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Daily Production</td>
+                            <td>320 units</td>
+                            <td>320 units</td>
+                            <td class="warning">346 units</td>
+                            <td>+26 units/day</td>
+                            <td>Review capacity plan</td>
+                        </tr>
+                        <tr>
+                            <td>Required Takt Time</td>
+                            <td>72.0 seconds</td>
+                            <td>67.3 seconds</td>
+                            <td class="error">62.2 seconds</td>
+                            <td>-9.8 seconds</td>
+                            <td>Major speed improvement</td>
+                        </tr>
+                        <tr>
+                            <td>Setup Loss/Day</td>
+                            <td>0 min</td>
+                            <td class="warning">78 min</td>
+                            <td class="warning">78 min</td>
+                            <td>-1.3 hours/day</td>
+                            <td>SMED implementation</td>
+                        </tr>
+                        <tr>
+                            <td>Welding Utilization</td>
+                            <td>89%</td>
+                            <td class="warning">96%</td>
+                            <td class="error">104%</td>
+                            <td>+15%</td>
+                            <td>Add station or shifts</td>
+                        </tr>
+                        <tr>
+                            <td>Assembly Utilization</td>
+                            <td class="error">130%</td>
+                            <td class="error">139%</td>
+                            <td class="error">152%</td>
+                            <td>+22%</td>
+                            <td>Add 2nd station urgently</td>
+                        </tr>
+                        <tr>
+                            <td>Bottleneck Processes</td>
+                            <td>1 (Assembly)</td>
+                            <td>1 (Assembly)</td>
+                            <td class="error">2 (Assembly, Welding)</td>
+                            <td>+1 bottleneck</td>
+                            <td>Multi-station expansion</td>
+                        </tr>
+                        <tr>
+                            <td>Total Stations Needed</td>
+                            <td>5</td>
+                            <td>5</td>
+                            <td class="error">6</td>
+                            <td>+1 station</td>
+                            <td>$290,000 investment</td>
+                        </tr>
+                        <tr>
+                            <td>Risk Level</td>
+                            <td class="warning">Medium</td>
+                            <td class="error">High</td>
+                            <td class="error">Critical</td>
+                            <td>2-level increase</td>
+                            <td>Crisis management mode</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #f57c00; margin: 0 0 10px 0;">📊 Compound Effect Analysis</h3>
+                    <p><strong>Three factors creating a perfect storm:</strong></p>
+                    <ol style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Demand Increase:</strong> +8.1% over contract (26 units/day)</li>
+                        <li><strong>Setup Losses:</strong> 78 minutes/day (6.5% capacity loss)</li>
+                        <li><strong>Product Mix Shift:</strong> Higher bottleneck products (B & D increased)</li>
+                    </ol>
+                    <p><strong>Combined Impact:</strong> Effective capacity requirement increased by ~15%</p>
+                    <p><strong>Critical Decision Point:</strong> Either reduce demand, add shifts, or invest in 2+ new stations</p>
+                </div>
+                
+                <h2 class="section-title">6. Capacity Decision Matrix (Agreed vs Actual)</h2>
+                <table id="decisionMatrixTable">
+                   <!-- Dynamic Headers & Body Here -->
+                </table>
+                
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #2e7d32; margin: 0 0 10px 0;">✅ Capacity Scenarios & Recommendations</h3>
+                    <table style="width: 100%; margin-top: 10px;">
+                        <thead>
+                            <tr style="background: #c8e6c9;">
+                                <th>Option</th>
+                                <th>Description</th>
+                                <th>Investment</th>
+                                <th>Time</th>
+                                <th>Pros</th>
+                                <th>Cons</th>
+                            </tr>
+                        </thead>
+                        <tbody style="background: white;">
+                            <tr>
+                                <td><strong>Option 1</strong></td>
+                                <td>Negotiate demand back to agreed (320/day)</td>
+                                <td>$0</td>
+                                <td>Immediate</td>
+                                <td>Only need Assembly station</td>
+                                <td>Lost revenue ($325k/yr)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Option 2</strong></td>
+                                <td>Add Assembly + Welding stations</td>
+                                <td>$290,000</td>
+                                <td>6-8 weeks</td>
+                                <td>Meet all demand</td>
+                                <td>High capital investment</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Option 3</strong></td>
+                                <td>Add overtime (2 hrs/day)</td>
+                                <td>$180,000/yr</td>
+                                <td>1 week</td>
+                                <td>Quick implementation</td>
+                                <td>Worker fatigue, ongoing cost</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Option 4</strong></td>
+                                <td>Reduce setups (SMED) + Assembly station</td>
+                                <td>$165,000</td>
+                                <td>8 weeks</td>
+                                <td>Improves efficiency</td>
+                                <td>Welding still at risk</td>
+                            </tr>
+                            <tr style="background: #c8e6c9;">
+                                <td><strong>Recommended</strong></td>
+                                <td><strong>Hybrid: Assembly station + Welding overtime</strong></td>
+                                <td><strong>$140,000 + $45k/yr</strong></td>
+                                <td><strong>4 weeks</strong></td>
+                                <td><strong>Balanced approach</strong></td>
+                                <td><strong>Best risk/reward</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Advanced Metrics Section -->
+            <div id="advanced" class="section">
+                <!-- Content for Advanced Metrics -->
+            </div>
+            
+            <!-- Financial Analysis Section -->
+            <div id="financial" class="section">
+                 <!-- Content for Financial Analysis -->
+            </div>
+            
+            <!-- Labor Planning Section -->
+            <div id="labor" class="section">
+                <!-- Content for Labor Planning -->
+            </div>
+            
+            <!-- Scenario Planning Section -->
+            <div id="scenario" class="section">
+                <!-- Content for Scenario Planning -->
+            </div>
+            
+            <!-- Visual Dashboard Section -->
+            <div id="visual" class="section">
+                <!-- Content for Visual Dashboard -->
+            </div>
+            
+            <!-- Action Items Section -->
+            <div id="actions" class="section">
+                 <!-- Content for Action Items -->
+            </div>
+        </div>
+    </div>
+     <!-- Rename Modal -->
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">Rename Item</h3>
+            <input type="text" id="newNameInput" placeholder="Enter new name">
+            <button class="button" onclick="submitRename()">Save</button>
+        </div>
+    </div>
+    
+    <script>
+        // --- GLOBAL STATE ---
+        let products = ['Product A', 'Product B', 'Product C', 'Product D'];
+        let processes = ['Cutting', 'Welding', 'Bending', 'Assembly'];
+        let currentRename = { type: null, index: -1 };
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            showSection('basic');
+            renderAllTables();
+        };
+
+        // --- DYNAMIC RENDERING ---
+        function renderAllTables() {
+            renderAgreedMixTable();
+            renderActualDemandTable();
+            renderBaseCycleTimeTable();
+            renderEffectiveCycleTimeTable();
+            renderCapacityAnalysisTable();
+            renderCapacityByProductTable();
+            renderDecisionMatrixTable();
+            renderRenameButtons();
+            calculate(); // Recalculate everything after re-rendering
+        }
+
+        function renderAgreedMixTable() {
+            const tableBody = document.querySelector('#agreedMixTable tbody');
+            tableBody.innerHTML = '';
+            products.forEach((p, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${p}</td>
+                    <td class="input-cell"><input type="number" id="agreedMix${index}" value="${(100 / products.length).toFixed(1)}" step="0.1" onchange="calculate()"></td>
+                    <td class="calculated" id="agreedCalcAnnual${index}"></td>
+                    <td class="calculated" id="agreedCalcDaily${index}"></td>
+                    ${index === 0 ? `<td rowspan="${products.length}" style="vertical-align: middle; text-align: center;">
+                                        <div class="calculated" id="mixTotalCheck" style="font-size: 18px; font-weight: bold;">100%</div>
+                                        <div id="mixCheckStatus" class="success" style="margin-top: 5px;">✓ Valid</div>
+                                    </td>` : ''}
+                `;
+            });
+        }
+
+        function renderActualDemandTable() {
+            const tableBody = document.querySelector('#actualDemandTable tbody');
+            tableBody.innerHTML = '';
+            products.forEach((p, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${p}</td>
+                    <td class="input-cell"><input type="number" id="daily${index}" value="${(320 / products.length).toFixed(0)}" onchange="calculate()"></td>
+                    <td class="calculated" id="weekly${index}"></td>
+                    <td class="calculated" id="annual${index}"></td>
+                    <td class="calculated" id="mix${index}"></td>
+                    <td class="calculated" id="agreedDaily${index}"></td>
+                    <td class="calculated" id="agreedAnnual${index}"></td>
+                    <td class="calculated" id="var${index}"></td>
+                    <td class="success" id="status${index}"></td>
+                `;
+            });
+        }
+
+         function renderBaseCycleTimeTable() {
+            const table = document.getElementById('baseCycleTimeTable');
+            table.innerHTML = ''; // Clear existing
+            
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            headerRow.innerHTML = `<th>Product</th>`;
+            processes.forEach(proc => headerRow.innerHTML += `<th>${proc} (sec)</th>`);
+            headerRow.innerHTML += `<th>Setup Time (min)</th>`;
+
+            const tbody = table.createTBody();
+            products.forEach((prod, pIndex) => {
+                const row = tbody.insertRow();
+                let rowHtml = `<td>${prod}</td>`;
+                processes.forEach((proc, procIndex) => {
+                    const procId = proc.toLowerCase().replace(/\s/g, '');
+                    rowHtml += `<td class="input-cell"><input type="number" id="base_${procId}${pIndex}" value="${20 + pIndex*5 + procIndex*5}" onchange="calculate()"></td>`;
+                });
+                rowHtml += `<td class="input-cell"><input type="number" id="setup${pIndex}" value="${15 + pIndex*2}" onchange="calculate()"></td>`;
+                row.innerHTML = rowHtml;
+            });
+
+             const tfoot = table.createTFoot();
+             const footerRow = tfoot.insertRow();
+             footerRow.style.background = '#ecf0f1';
+             footerRow.style.fontWeight = 'bold';
+             footerRow.innerHTML = `<td colspan="${processes.length + 1}"><strong>Average Setup Time</strong></td><td class="calculated" id="avgSetup"></td>`;
+        }
+
+         function renderEffectiveCycleTimeTable() {
+            const table = document.getElementById('effectiveCycleTimeTable');
+            table.innerHTML = ''; // Clear existing
+            
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            headerRow.innerHTML = `<th>Product</th>`;
+            processes.forEach(proc => headerRow.innerHTML += `<th>${proc} (sec)</th>`);
+            headerRow.innerHTML += `<th>Bottleneck Cycle (sec)</th><th>Bottleneck Process</th><th>Actual Takt Required</th><th>Takt Gap</th>`;
+
+            const tbody = table.createTBody();
+            products.forEach((prod, pIndex) => {
+                const row = tbody.insertRow();
+                let rowHtml = `<td>${prod}</td>`;
+                processes.forEach((proc, procIndex) => {
+                    const procId = proc.toLowerCase().replace(/\s/g, '');
+                    rowHtml += `<td class="calculated" id="eff_${procId}${pIndex}_display"></td>`;
+                });
+                rowHtml += `
+                    <td class="calculated" id="bottleneck${pIndex}"></td>
+                    <td class="calculated" id="bottleProcess${pIndex}"></td>
+                    <td class="calculated" id="reqTakt${pIndex}"></td>
+                    <td class="error" id="taktGap${pIndex}"></td>
+                `;
+                row.innerHTML = rowHtml;
+            });
+        }
+
+        function renderCapacityAnalysisTable() {
+            const tableBody = document.querySelector('#capacityAnalysisTable tbody');
+            tableBody.innerHTML = '';
+            processes.forEach((proc, index) => {
+                const row = tableBody.insertRow();
+                const procId = proc.toLowerCase().replace(/\s/g, '');
+                row.innerHTML = `
+                    <td>${proc}</td>
+                    <td class="calculated" id="wact${procId}"></td>
+                    <td class="calculated" id="agreedTakt${procId}"></td>
+                    <td class="calculated" id="takt${procId}"></td>
+                    <td class="warning" id="demandStatus${procId}"></td>
+                    <td class="input-cell"><input type="number" id="stations${procId}" value="1" onchange="calculate()"></td>
+                    <td class="calculated" id="util${procId}"></td>
+                    <td class="success" id="status${procId}"></td>
+                    <td class="calculated" id="req${procId}"></td>
+                    <td class="calculated" id="finalUtil${procId}"></td>
+                `;
+            });
+        }
+
+        function renderCapacityByProductTable() {
+            const table = document.getElementById('capacityByProductTable');
+            table.innerHTML = '';
+            
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            headerRow.innerHTML = `<th>Process</th>`;
+            products.forEach(p => headerRow.innerHTML += `<th>${p}</th>`);
+            headerRow.innerHTML += `<th>Total Utilization</th>`;
+
+            const tbody = table.createTBody();
+            processes.forEach(proc => {
+                const row = tbody.insertRow();
+                let rowHtml = `<td>${proc}</td>`;
+                products.forEach((p, pIndex) => {
+                    const procId = proc.toLowerCase().replace(/\s/g, '');
+                    rowHtml += `<td class="calculated" id="util_${procId}${pIndex}"></td>`;
+                });
+                rowHtml += `<td class="calculated" id="totalUtil_${proc.toLowerCase().replace(/\s/g, '')}"></td>`;
+                row.innerHTML = rowHtml;
+            });
+        }
+        
+        function renderDecisionMatrixTable() {
+            const table = document.getElementById('decisionMatrixTable');
+            table.innerHTML = '';
+
+            const thead = table.createTHead();
+            thead.innerHTML = `
+                <tr>
+                    <th>Process</th>
+                    <th>Utilization @ Agreed</th>
+                    <th>Utilization @ Actual</th>
+                    <th>Demand Pressure</th>
+                    <th>Capacity Gap</th>
+                    <th>Recommended Action</th>
+                    <th>Priority</th>
+                </tr>
+            `;
+            
+            const tbody = table.createTBody();
+            processes.forEach(proc => {
+                const procId = proc.toLowerCase().replace(/\s/g, '');
+                tbody.insertRow().innerHTML = `
+                    <td>${proc}</td>
+                    <td class="calculated" id="utilAgreed_${procId}"></td>
+                    <td class="calculated" id="utilActual_${procId}"></td>
+                    <td class="calculated" id="demandPressure_${procId}"></td>
+                    <td class="calculated" id="capacityGap_${procId}"></td>
+                    <td class="calculated" id="recAction_${procId}"></td>
+                    <td class="calculated" id="priority_${procId}"></td>
+                `;
+            });
+        }
+
+        function renderRenameButtons() {
+            const container = document.getElementById('rename-buttons-container');
+            container.innerHTML = '';
+            
+            products.forEach((p, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'button';
+                btn.textContent = `Rename "${p}"`;
+                btn.onclick = () => openModal('product', index);
+                container.appendChild(btn);
+            });
+
+             processes.forEach((p, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'button';
+                btn.textContent = `Rename "${p}"`;
+                btn.onclick = () => openModal('process', index);
+                container.appendChild(btn);
+            });
+        }
+
+        // --- CONFIGURATION CONTROLS ---
+        function addProduct() {
+            const newName = `Product ${String.fromCharCode(65 + products.length)}`;
+            products.push(newName);
+            renderAllTables();
+        }
+        function removeProduct() {
+            if (products.length > 1) {
+                products.pop();
+                renderAllTables();
+            } else {
+                alert("Cannot remove the last product.");
+            }
+        }
+        function addProcess() {
+             const newName = `Process ${processes.length + 1}`;
+            processes.push(newName);
+            renderAllTables();
+        }
+        function removeProcess() {
+            if (processes.length > 1) {
+                processes.pop();
+                renderAllTables();
+            } else {
+                alert("Cannot remove the last process.");
+            }
+        }
+
+        // --- RENAME MODAL LOGIC ---
+        function openModal(type, index) {
+            currentRename = { type, index };
+            const name = type === 'product' ? products[index] : processes[index];
+            document.getElementById('modalTitle').textContent = `Rename "${name}"`;
+            document.getElementById('newNameInput').value = name;
+            document.getElementById('renameModal').style.display = "block";
+        }
+        function closeModal() {
+            document.getElementById('renameModal').style.display = "none";
+        }
+        function submitRename() {
+            const newName = document.getElementById('newNameInput').value;
+            if (newName && newName.trim() !== '') {
+                if (currentRename.type === 'product') {
+                    products[currentRename.index] = newName;
+                } else if (currentRename.type === 'process') {
+                    processes[currentRename.index] = newName;
+                }
+                closeModal();
+                renderAllTables();
+            }
+        }
+
+        // --- TAB NAVIGATION ---
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            const activeButton = Array.from(tabs).find(tab => tab.getAttribute('onclick') === `showSection('${sectionId}')`);
+            if(activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+        
+        // --- CORE CALCULATION ---
+        function calculate() {
+            // Get global inputs
+            const shifts = parseFloat(document.getElementById('shifts').value) || 1;
+            const hours = parseFloat(document.getElementById('hours').value) || 8;
+            const days = parseFloat(document.getElementById('days').value) || 5;
+            const weeks = parseFloat(document.getElementById('weeks').value) || 50;
+            const oee = (parseFloat(document.getElementById('oee').value) || 0) / 100;
+            const workingDaysPerYear = days * weeks;
+            const setupFreq = parseFloat(document.getElementById('setupFreq').value) || 0;
+
+            // Get setup times and calculate total
+            let totalSetupTime = 0;
+            products.forEach((p, index) => {
+                totalSetupTime += parseFloat(document.getElementById(`setup${index}`).value) || 0;
+            });
+            const avgSetupTime = products.length > 0 ? totalSetupTime / products.length : 0;
+            const totalSetupTimePerDay = avgSetupTime * setupFreq;
+            document.getElementById('totalSetupTime').textContent = totalSetupTimePerDay.toFixed(1);
+            document.getElementById('avgSetup').innerHTML = `<strong>${avgSetupTime.toFixed(1)}</strong>`;
+
+            // Get agreed annual demand from Table 1
+            const agreedTotalDemand = parseFloat(document.getElementById('agreedDemand').value) || 0;
+            const agreedDailyDemand = workingDaysPerYear > 0 ? agreedTotalDemand / workingDaysPerYear : 0;
+
+            // Get agreed product mix
+            let mixTotal = 0;
+            let agreedAnnuals = [];
+            let agreedDailies = [];
+            products.forEach((p, index) => {
+                const mixPercent = (parseFloat(document.getElementById(`agreedMix${index}`).value) || 0) / 100;
+                mixTotal += mixPercent * 100;
+                const annual = agreedTotalDemand * mixPercent;
+                const daily = workingDaysPerYear > 0 ? annual / workingDaysPerYear : 0;
+                agreedAnnuals.push(annual);
+                agreedDailies.push(daily);
+                document.getElementById(`agreedCalcAnnual${index}`).textContent = Math.round(annual).toLocaleString();
+                document.getElementById(`agreedCalcDaily${index}`).textContent = Math.round(daily);
+            });
+            document.getElementById('mixTotal').innerHTML = `<strong>${mixTotal.toFixed(1)}%</strong>`;
+            document.getElementById('mixTotalCheck').textContent = `${mixTotal.toFixed(1)}%`;
+            const mixCheckElement = document.getElementById('mixCheckStatus');
+            if (Math.abs(mixTotal - 100) < 0.1) {
+                mixCheckElement.textContent = '✓ Valid';
+                mixCheckElement.className = 'success';
+            } else {
+                mixCheckElement.textContent = '⚠ Must = 100%';
+                mixCheckElement.className = 'error';
+            }
+            document.getElementById('agreedTotalAnnual').innerHTML = `<strong>${agreedTotalDemand.toLocaleString()}</strong>`;
+            document.getElementById('agreedTotalDaily').innerHTML = `<strong>${Math.round(agreedDailyDemand)}</strong>`;
+
+            // Get actual daily demands from customer
+            let actualDailies = [];
+            let totalDailyActual = 0;
+            products.forEach((p, index) => {
+                const daily = parseFloat(document.getElementById(`daily${index}`).value) || 0;
+                actualDailies.push(daily);
+                totalDailyActual += daily;
+            });
+            const totalWeeklyActual = totalDailyActual * days;
+            const totalAnnualActual = totalDailyActual * workingDaysPerYear;
+
+            // Takt Time Calculation
+            const totalSeconds = shifts * hours * days * weeks * 3600;
+            const setupLossSeconds = totalSetupTimePerDay * 60 * workingDaysPerYear;
+            const netSeconds = totalSeconds - setupLossSeconds;
+            const effectiveSeconds = netSeconds * oee;
+            const agreedTaktTime = agreedTotalDemand > 0 ? effectiveSeconds / agreedTotalDemand : 0;
+            const actualRequiredTakt = totalAnnualActual > 0 ? effectiveSeconds / totalAnnualActual : 0;
+            
+            document.getElementById('totalDemand').textContent = agreedTotalDemand.toLocaleString();
+            document.getElementById('agreedDaily').textContent = agreedDailyDemand.toFixed(0);
+            document.getElementById('totalSeconds').textContent = totalSeconds.toLocaleString();
+            document.getElementById('setupLoss').textContent = setupLossSeconds.toLocaleString();
+            document.getElementById('netSeconds').textContent = netSeconds.toLocaleString();
+            document.getElementById('effectiveSeconds').textContent = effectiveSeconds.toLocaleString();
+            document.getElementById('taktTime').textContent = agreedTaktTime.toFixed(1);
+
+            // Update Actual Demand Table
+            products.forEach((p, index) => {
+                const daily = actualDailies[index];
+                document.getElementById(`weekly${index}`).textContent = (daily * days).toFixed(0);
+                document.getElementById(`annual${index}`).textContent = (daily * workingDaysPerYear).toLocaleString();
+                document.getElementById(`mix${index}`).textContent = (totalDailyActual > 0 ? (daily / totalDailyActual) * 100 : 0).toFixed(1) + '%';
+                document.getElementById(`agreedDaily${index}`).textContent = agreedDailies[index].toFixed(0);
+                document.getElementById(`agreedAnnual${index}`).textContent = agreedAnnuals[index].toLocaleString();
+                const variance = agreedDailies[index] > 0 ? ((daily - agreedDailies[index]) / agreedDailies[index] * 100) : 0;
+                document.getElementById(`var${index}`).textContent = (variance > 0 ? '+' : '') + variance.toFixed(1) + '%';
+                updateDemandStatus(index, variance);
+            });
+            document.getElementById('totalDaily').innerHTML = `<strong>${totalDailyActual.toFixed(0)}</strong>`;
+            document.getElementById('totalWeekly').innerHTML = `<strong>${totalWeeklyActual.toFixed(0)}</strong>`;
+            document.getElementById('totalAnnual').innerHTML = `<strong>${totalAnnualActual.toLocaleString()}</strong>`;
+            document.getElementById('totalAgreedDaily').innerHTML = `<strong>${agreedDailyDemand.toFixed(0)}</strong>`;
+            document.getElementById('totalAgreedAnnualDisplay').innerHTML = `<strong>${agreedTotalDemand.toLocaleString()}</strong>`;
+            const totalVar = agreedDailyDemand > 0 ? ((totalDailyActual - agreedDailyDemand) / agreedDailyDemand * 100) : 0;
+            document.getElementById('totalVar').innerHTML = `<strong>${(totalVar > 0 ? '+' : '') + totalVar.toFixed(1)}%</strong>`;
+            updateTotalDemandStatus(totalVar);
+
+            // Get base cycle times and station counts
+            let baseCycleTimes = []; // [ {proc1: 10, proc2: 12}, {proc1: 11, proc2: 13} ]
+            let stationCounts = {}; // {proc1: 1, proc2: 2}
+            
+            processes.forEach(proc => {
+                const procId = proc.toLowerCase().replace(/\s/g, '');
+                stationCounts[procId] = parseFloat(document.getElementById(`stations${procId}`).value) || 1;
+            });
+
+            products.forEach((p, pIndex) => {
+                let productTimes = {};
+                processes.forEach(proc => {
+                    const procId = proc.toLowerCase().replace(/\s/g, '');
+                    productTimes[procId] = parseFloat(document.getElementById(`base_${procId}${pIndex}`).value) || 0;
+                });
+                baseCycleTimes.push(productTimes);
+            });
+
+            // Calculate Effective Times and Bottlenecks
+            products.forEach((p, pIndex) => {
+                let effectiveTimes = {};
+                processes.forEach(proc => {
+                    const procId = proc.toLowerCase().replace(/\s/g, '');
+                    const effTime = baseCycleTimes[pIndex][procId] / stationCounts[procId];
+                    effectiveTimes[procId] = effTime;
+                    document.getElementById(`eff_${procId}${pIndex}_display`).textContent = effTime.toFixed(1);
+                });
+                const bottleneckTime = updateBottleneckInfo(pIndex, effectiveTimes);
+                document.getElementById(`reqTakt${pIndex}`).textContent = actualRequiredTakt.toFixed(1);
+                updateTaktGapStatus(pIndex, bottleneckTime, actualRequiredTakt);
+            });
+
+            // Calculate WACTs and update Capacity Analysis
+            processes.forEach(proc => {
+                const procId = proc.toLowerCase().replace(/\s/g, '');
+                let wact = 0;
+                products.forEach((p, pIndex) => {
+                    const mix = totalDailyActual > 0 ? actualDailies[pIndex] / totalDailyActual : 0;
+                    wact += baseCycleTimes[pIndex][procId] * mix;
+                });
+
+                const effectiveWact = wact / stationCounts[procId];
+                document.getElementById(`wact${procId}`).textContent = effectiveWact.toFixed(1);
+                document.getElementById(`agreedTakt${procId}`).textContent = agreedTaktTime.toFixed(1);
+                document.getElementById(`takt${procId}`).textContent = actualRequiredTakt.toFixed(1);
+                updateDemandStatusForProcess(procId, agreedTaktTime, actualRequiredTakt);
+                updateProcessAnalysis(procId, wact, actualRequiredTakt); // Pass base WACT
+            });
+
+            // Calculate Capacity Utilization by Product (Table 4a)
+            const totalAvailableSecondsPerDay = actualRequiredTakt * totalDailyActual;
+            if (totalAvailableSecondsPerDay > 0) {
+                 processes.forEach(proc => {
+                    const procId = proc.toLowerCase().replace(/\s/g, '');
+                    let totalProcUtil = 0;
+                    products.forEach((p, pIndex) => {
+                        const util = ((baseCycleTimes[pIndex][procId] * actualDailies[pIndex]) / (totalAvailableSecondsPerDay * stationCounts[procId])) * 100;
+                        document.getElementById(`util_${procId}${pIndex}`).textContent = util.toFixed(1) + '%';
+                        totalProcUtil += util;
+                    });
+                    document.getElementById(`totalUtil_${procId}`).textContent = totalProcUtil.toFixed(1) + '%';
+                });
+            }
+        }
+
+        // --- HELPER FUNCTIONS ---
+        function updateDemandStatus(productIndex, variance) {
+            const statusElement = document.getElementById(`status${productIndex}`);
+            if (Math.abs(variance) <= 5) {
+                statusElement.className = 'success';
+                statusElement.textContent = 'On Target';
+            } else if (variance > 5) {
+                statusElement.className = 'warning';
+                statusElement.textContent = 'Over Demand';
+            } else {
+                statusElement.className = 'error';
+                statusElement.textContent = 'Under Demand';
+            }
+        }
+
+        function updateTotalDemandStatus(variance) {
+            const statusElement = document.getElementById('totalStatus');
+            if (Math.abs(variance) <= 5) {
+                statusElement.className = 'success';
+                statusElement.innerHTML = '<strong>Within Tolerance</strong>';
+            } else if (variance > 5) {
+                statusElement.className = 'warning';
+                statusElement.innerHTML = '<strong>Over Capacity</strong>';
+            } else {
+                statusElement.className = 'error';
+                statusElement.innerHTML = '<strong>Under Utilized</strong>';
+            }
+        }
+
+        function updateDemandStatusForProcess(procId, agreedTakt, requiredTakt) {
+            const statusElement = document.getElementById(`demandStatus${procId}`);
+            const percentDiff = requiredTakt > 0 ? ((agreedTakt - requiredTakt) / agreedTakt * 100) : 0;
+            
+            if (Math.abs(percentDiff) < 2) {
+                statusElement.textContent = 'On Target';
+                statusElement.className = 'success';
+            } else if (percentDiff > 0) {
+                statusElement.textContent = `Over +${percentDiff.toFixed(0)}%`;
+                statusElement.className = percentDiff > 10 ? 'error' : 'warning';
+            } else {
+                statusElement.textContent = `Under ${percentDiff.toFixed(0)}%`;
+                statusElement.className = 'success';
+            }
+        }
+
+        function updateBottleneckInfo(productIndex, effectiveTimes) {
+            let maxTime = 0;
+            let bottleneckProcess = '';
+            
+            for (const proc in effectiveTimes) {
+                if (effectiveTimes[proc] > maxTime) {
+                    maxTime = effectiveTimes[proc];
+                    // Find original process name for display
+                    bottleneckProcess = processes.find(p => p.toLowerCase().replace(/\s/g, '') === proc);
+                }
+            }
+            
+            document.getElementById(`bottleneck${productIndex}`).textContent = maxTime.toFixed(1);
+            document.getElementById(`bottleProcess${productIndex}`).textContent = bottleneckProcess;
+            return maxTime;
+        }
+
+        function updateTaktGapStatus(productIndex, bottleneckTime, requiredTakt) {
+            const gapElement = document.getElementById(`taktGap${productIndex}`);
+            const gap = bottleneckTime - requiredTakt;
+            
+            if (gap > 10) {
+                gapElement.textContent = 'OVER';
+                gapElement.className = 'error';
+            } else if (gap > 0) {
+                gapElement.textContent = 'TIGHT';
+                gapElement.className = 'warning';
+            } else {
+                gapElement.textContent = 'OK';
+                gapElement.className = 'success';
+            }
+        }
+
+        function updateProcessAnalysis(procId, wact, taktTime) {
+            const stations = parseFloat(document.getElementById(`stations${procId}`).value) || 1;
+            const utilization = taktTime > 0 ? (wact / (taktTime * stations)) * 100 : 0;
+            const required = taktTime > 0 ? Math.ceil(wact / taktTime) : 1;
+            const finalUtil = (taktTime > 0 && required > 0) ? (wact / (taktTime * required)) * 100 : 0;
+            
+            document.getElementById(`util${procId}`).textContent = utilization.toFixed(0) + '%';
+            document.getElementById(`req${procId}`).textContent = required;
+            document.getElementById(`finalUtil${procId}`).textContent = finalUtil.toFixed(0) + '%';
+            
+            const statusElement = document.getElementById(`status${procId}`);
+            const targetUtil = parseFloat(document.getElementById('targetUtil').value) || 85;
+            
+            if (utilization > 150) {
+                statusElement.textContent = 'SEVERE BOTTLENECK';
+                statusElement.className = 'error';
+            } else if (utilization > 100) {
+                statusElement.textContent = 'BOTTLENECK';
+                statusElement.className = 'error';
+            } else if (utilization > 95) {
+                statusElement.textContent = 'CRITICAL';
+                statusElement.className = 'error';
+            } else if (utilization > targetUtil) {
+                statusElement.textContent = 'OK (Risk)';
+                statusElement.className = 'warning';
+            } else {
+                statusElement.textContent = 'OK';
+                statusElement.className = 'success';
+            }
+        }
+    </script>
+</body>
+</html>
+
